@@ -4,16 +4,16 @@ import Link from '@material-ui/core/Link'
 import Typography from '@material-ui/core/Typography'
 
 const useStyles = makeStyles((theme) => ({
-  root: {
+  footer: {
       backgroundColor: 'inherit',
   },
 }));
 
 export default function Footer() {
   const classes = useStyles();
-
+  
   return (
-    <div className={classes.root}>
+    <div className="footer">
       <Typography variant="body2" color="textSecondary" align="center">
       {'Copyright © '}
       <Link color="primary" href="/">

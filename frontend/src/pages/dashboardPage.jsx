@@ -28,6 +28,8 @@ import logo from '../media/StonksMainLogo.png';
 
 const drawerWidth = 240;
 
+const notificationAmount = 5;
+
 const useStyles = makeStyles((theme) => ({
   root: {
     display: 'flex',
@@ -144,13 +146,13 @@ export default function Dashboard() {
             <img 
             alt = "Logo" 
             src = {logo}
-            height = "25"
+            height = "35"
           />
           </Typography>
           <IconButton color="inherit">
             <Badge 
             color = "error"
-            badgeContent = {5}
+            badgeContent = {notificationAmount}
             >
               <NotificationsIcon />
             </Badge>
