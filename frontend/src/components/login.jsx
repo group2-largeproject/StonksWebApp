@@ -20,7 +20,7 @@ const doLogin = async event =>
 
         window.location.href="/Dashboard"; 
 
-        /*var js = '{"login":"'
+        {/*var js = '{"login":"'
             + loginName.value
             + '","password":"'
             + loginPassword.value +'"}';
@@ -57,7 +57,7 @@ const doLogin = async event =>
         {
             alert(e.toString());
             return;
-        }*/    
+        }*/}   
     };
 
 
