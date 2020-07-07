@@ -150,10 +150,9 @@ function getTime(d)
   return newTime;
 }
 
+// https://www.npmjs.com/package/node-iex-cloud
 app.post('/api/addStock', async(req, res, next) => 
 {
-  // https://www.npmjs.com/package/node-iex-cloud
-
   var error = '';
   const {stock} = req.body;
   var d = new Date();
@@ -169,6 +168,14 @@ app.post('/api/addStock', async(req, res, next) =>
 
   if (results.length > 0)
   {
+    // check if time since last refresh >= 2hrs
+    // access results[0].timeUpdate = 14:30:20
+
+    let test = results[0].timeUpdate;
+
+    // would print out 14, following example above
+    console.log("Time in hours: " + test[0] + test[1]);
+      
     let price = results[0].currentPrice;
 
     // const oldStock = {symbol:stock,currentPrice:price,dateUpdated:newDate,timeUpdated:newTime};
