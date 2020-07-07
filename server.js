@@ -150,41 +150,38 @@ function getTime(d)
   return newTime;
 }
 
-
 app.post('/api/addStock', async(req, res, next) => 
 {
   // https://www.npmjs.com/package/node-iex-cloud
 
   var error = '';
-  const {stock, userId} = req.body;
+  const {stock} = req.body;
   var d = new Date();
   let newDate = getDate(d);
   let newTime = getTime(d);
-
-  console.log("Date: " + newDate);
-  console.log("Time:" + newTime);
   const db = client.db();
 
   // if stock user wants to add has been added by someone else, use that data inste
   // if stock has been added but has not been updated for 2 or more hours, refresh stock
   // maybe we can add user id's to the stocks they want to track? rather than adding
   // a shit ton of the same stock per user id (lol)
-  const results = await db.collection('Stocks').find({symbol:stock, userId:userId}).toArray();
+  const results = await db.collection('Stocks').find({symbol:stock}).toArray();
 
   if (results.length > 0)
   {
     let price = results[0].currentPrice;
-    console.log("COMMUNAL STONKS: " + price);
-    const oldStock = {symbol:stock,currentPrice:price,userId:userId,dateUpdated:newDate,timeUpdate:newTime};
 
-    console.log(oldStock);
+    // const oldStock = {symbol:stock,currentPrice:price,dateUpdated:newDate,timeUpdated:newTime};
+    const updateTime = {dateUpdated:newDate,timeUpdated:newTime};
+    const result = db.collection('Stocks').updateOne({"symbol":stock},{ $set : {"dateUpdate":newDate, "timeUpdate":newTime} },);
+
     var ret = {error:error}
     res.status(200).json(ret);
   }
   else if(results.length == 0)
   {
     let price = await fetchStock(stock);
-    const newStock = {symbol:stock,currentPrice:price};
+    const newStock = {symbol:stock,currentPrice:price,dateUpdated:newDate,timeUpdated:newTime};
 
     try
     {
@@ -196,8 +193,8 @@ app.post('/api/addStock', async(req, res, next) =>
       error = e.toString();
     }
 
-    console.log("NEW STONK: " + price);
-    console.log(newStock);
+    // console.log("NEW STONK: " + price);
+    // console.log(newStock);
     var ret = {error:error}
     res.status(200).json(ret);
   }
