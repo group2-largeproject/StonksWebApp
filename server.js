@@ -2,28 +2,26 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
+const Joi = require('joi');
+const validator = require('express-joi-validation').createValidator({});
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 const mongoose = require('mongoose');
+require('dotenv').config();
 
 
 // const router = require('./routes/index');
 
 const PORT = process.env.PORT || 5000; 
 const MongoClient = require('mongodb').MongoClient;
-const uri = "mongodb+srv://Jason_Rod:pEyQefCge8UuYH0l@cop4331-7exdq.mongodb.net/COP4331_Large_Project_Database?retryWrites=true&w=majority";
+const uri = process.env.MONGO_URL;
 const client = new MongoClient(uri);
 app.set('port', 5000);
 
 app.use(express.static(path.join(__dirname, '/client/public')));
 
-// client.connect(err => {
-//   const collection = client.db("test").collection("devices");
-//   // perform actions on the collection object
-//   client.close();
-// });
 client.connect();
 
 // app.use(cors())
@@ -43,6 +41,12 @@ app.get('*', (req,res) => {
     res.sendFile(path.join(__dirname + '/client/public/index.html'))
 });
 
+const registerSchema = Joi.object({
+  username: Joi.string().required(),
+  password: Joi.string().required().alphanum().min(8).max(20),
+  email: Joi.string().email().required()
+});
+
 app.post('/api/login', async (req, res, next) =>
 {
   var error = '';
@@ -57,12 +61,9 @@ app.post('/api/login', async (req, res, next) =>
 
   if ( results.length > 0 )
   {
-    id = results[0].userId;
+    id = results[0]._id;
     fn = results[0].firstName;
     ln = results[0].lastName;
-    // console.log('WE ARE ALIVE: ' + results[0].firstName);
-    // console.log('Last: ' + results[0].lastName);
-    // console.log('id: ' + results[0].userId);
   }
   else
   {
@@ -76,10 +77,13 @@ app.post('/api/login', async (req, res, next) =>
 // basic register api, only takes in username and password
 app.post('/api/register', async (req, res, next) =>
 {
-  const {username, password} = req.body;
+  const {username, password, email} = req.body;
 
-  const newUser = {username:username, password:password};
-  var error = '';
+  const newUser = {username:username, password:password, email:email};
+
+  const {error} = Joi.validate(newUser, registerSchema);
+  var errordb = '';
+  if(error) return res.status(400).send(error.details[0].message);
 
   try
   {
@@ -88,10 +92,10 @@ app.post('/api/register', async (req, res, next) =>
   }
   catch(e)
   {
-    error = e.toString();
+    errordb = e.toString();
   }
 
-  var ret = {error:error};
+  var ret = {error:errordb};
   res.status(200).json(ret);
 
 });
