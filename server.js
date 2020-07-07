@@ -8,6 +8,8 @@ const app = express();
 const mongoose = require('mongoose');
 const { IEXCloudClient } = require('node-iex-cloud');
 const fetch = require('node-fetch');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -16,7 +18,8 @@ require('dotenv').config();
 const registerSchema = Joi.object({
   username: Joi.string().required(),
   password: Joi.string().required().alphanum().min(8).max(20),
-  email: Joi.string().email().required()
+  email: Joi.string().email().required(),
+  isVerified: Joi.string().required()
 });
 
 const iex = new IEXCloudClient(fetch, {
@@ -85,14 +88,20 @@ app.post('/api/login', async (req, res, next) =>
 // basic register api, only takes in username and password
 app.post('/api/register', async (req, res, next) =>
 {
-  const {username, password, email} = req.body;
-
-  const newUser = {username:username, password:password, email:email};
-
-  const {error} = Joi.validate(newUser, registerSchema);
   var errordb = '';
+  let verified = "false";
+
+  // accept user input & format it to be entered into database
+  const {username, password, email} = req.body;
+  const newUser = {username:username, password:password, email:email, isVerified:verified};
+  const {error} = Joi.validate(newUser, registerSchema);
+
+  // joi error check
   if(error) return res.status(400).send(error.details[0].message);
 
+  // MAKE SURE USER EMAIL IS NOT IN USE, SPIT ERROR IF IT IS
+
+  // try to add user into the database
   try
   {
     const db = client.db();
@@ -102,6 +111,18 @@ app.post('/api/register', async (req, res, next) =>
   {
     errordb = e.toString();
   }
+
+  // REQUIRES:
+  // NODEMAILER, CRYPTO (INSTALLED BOTH ALREADY)
+
+  // make token for this user
+  // ************************
+  
+  // Save the verification token
+  // ***************************
+
+  // send the email
+  // **************
 
   var ret = {error:errordb};
   res.status(200).json(ret);
