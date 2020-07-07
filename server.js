@@ -108,31 +108,74 @@ app.post('/api/register', async (req, res, next) =>
 
 });
 
+// fetches & returns the stock symbols current price
 async function fetchStock(stock)
 {
   return iex.symbol(stock.toString()).price();
 }
 
+// adds zeros to the time/date if it is any digit less than 10
+// e.g if minutes = 7 this function will turn minutes into "07".
+function addZero(i)
+{
+  if (i < 10)
+  {
+    i = "0" + i;
+  }
+  return i;
+}
+
+// gets the current date in UTC format.
+// YEAR/MONTH/DAY
+function getDate(d)
+{
+  // Days: 1 = Sunday, 2 = Monday, 3 = Tuesday, 4 = Wednesday, etc.
+  var day = addZero(d.getUTCDate() + 1);
+
+  // Month: 1 = Jan, 2 = Feb, 3 = March, 4 = April, etc.
+  var month = addZero(d.getUTCMonth() + 1);  
+  var year = d.getUTCFullYear();
+  newDate = year + "/" + month + "/" + day;
+  return newDate;
+}
+
+// gets the current time in UTC format.
+// HOURS:MINUTES:SECONDS
+function getTime(d)
+{
+  var hours = addZero(d.getUTCHours());
+  var min = addZero(d.getUTCMinutes());
+  var sec = addZero(d.getUTCSeconds());
+  newTime = hours + ":" + min + ":" + sec;
+  return newTime;
+}
+
+
 app.post('/api/addStock', async(req, res, next) => 
 {
   // https://www.npmjs.com/package/node-iex-cloud
 
-
   var error = '';
-  const {stock} = req.body;
+  const {stock, userId} = req.body;
+  var d = new Date();
+  let newDate = getDate(d);
+  let newTime = getTime(d);
+
+  console.log("Date: " + newDate);
+  console.log("Time:" + newTime);
   const db = client.db();
 
   // if stock user wants to add has been added by someone else, use that data inste
   // if stock has been added but has not been updated for 2 or more hours, refresh stock
   // maybe we can add user id's to the stocks they want to track? rather than adding
   // a shit ton of the same stock per user id (lol)
-  const results = await db.collection('Stocks').find({symbol:stock}).toArray();
+  const results = await db.collection('Stocks').find({symbol:stock, userId:userId}).toArray();
 
   if (results.length > 0)
   {
     let price = results[0].currentPrice;
     console.log("COMMUNAL STONKS: " + price);
-    const oldStock = {symbol:stock,currentPrice:price};
+    const oldStock = {symbol:stock,currentPrice:price,userId:userId,dateUpdated:newDate,timeUpdate:newTime};
 
     console.log(oldStock);
     var ret = {error:error}
@@ -172,7 +215,7 @@ app.use((req, res, next) =>
         'GET, POST, PATCH, DELETE, OPTIONS'  
     );  
     next();
-});
+})
 
 app.listen(PORT, function() { 
   console.log(`Server listening on port ${PORT}.`);
