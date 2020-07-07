@@ -73,6 +73,7 @@ app.post('/api/login', async (req, res, next) =>
   res.status(200).json(ret);
 });
 
+// basic register api, only takes in username and password
 app.post('/api/register', async (req, res, next) =>
 {
   const {username, password} = req.body;
