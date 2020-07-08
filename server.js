@@ -10,17 +10,11 @@ const { IEXCloudClient } = require('node-iex-cloud');
 const fetch = require('node-fetch');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const { restart } = require('nodemon');
 
 app.use(cors());
 app.use(bodyParser.json());
 require('dotenv').config();
-
-const registerSchema = Joi.object({
-  username: Joi.string().required(),
-  password: Joi.string().required().alphanum().min(8).max(20),
-  email: Joi.string().email().required(),
-  isVerified: Joi.string().required()
-});
 
 const iex = new IEXCloudClient(fetch, {
   sandbox: true,
@@ -65,7 +59,7 @@ app.post('/api/login', async (req, res, next) =>
   const {username, password} = req.body;
   const db = client.db();
   const results = await db.collection('User').find({username:username,password:password}).toArray();
-  
+
   var id = -1;
   var fn = '';
   var ln = '';
@@ -80,9 +74,22 @@ app.post('/api/login', async (req, res, next) =>
   {
     error = 'Invalid username/password';
   }
-  
+
+  if(results.length > 0 && results[0].isVerified == "false")
+  {
+    error = "Account needs to be verified.";
+  }
+  // set session cookie for logout / activity
   var ret = {userId:id, firstName:fn, lastName:ln, error:error};
   res.status(200).json(ret);
+});
+
+const registerSchema = Joi.object({
+  username: Joi.string().required(),
+  password: Joi.string().required().alphanum().min(8).max(20),
+  email: Joi.string().email().required(),
+  isVerified: Joi.string().required(),
+  token: Joi.required()
 });
 
 // basic register api, only takes in username and password
@@ -93,41 +100,61 @@ app.post('/api/register', async (req, res, next) =>
 
   // accept user input & format it to be entered into database
   const {username, password, email} = req.body;
-  const newUser = {username:username, password:password, email:email, isVerified:verified};
+
+  // MAKE SURE USER EMAIL IS NOT IN USE, SPIT ERROR IF IT IS
+  const emailDbCheck = client.db();
+  const emailCheck = await emailDbCheck.collection('User').findOne({email:email});
+  if (emailCheck) return res.status(400).send({msg: "The email address you have entered is already associated with another account."});
+
+  const token = crypto.randomBytes(16).toString('hex');
+  const newUser = {username:username, password:password, email:email, isVerified:verified, token:token};
   const {error} = Joi.validate(newUser, registerSchema);
 
   // joi error check
   if(error) return res.status(400).send(error.details[0].message);
 
-  // MAKE SURE USER EMAIL IS NOT IN USE, SPIT ERROR IF IT IS
-
   // try to add user into the database
   try
   {
     const db = client.db();
-    const result = db.collection('User').insertOne(newUser);
+    db.collection('User').insertOne(newUser);
+    // db.collection('User').updateOne({"email":email},{ $set : {"token":token} },);
+    console.log("SHITAHS ANSLKNASTA LKSALKSG BAKLSBGKASBG KLASK");
+    // send email?
+    var transporter = nodemailer.createTransport({ service: 'Sendgrid', auth: { user: process.env.SENDGRID_USERNAME, pass: process.env.SENDGRID_PASSWORD } });
+    var mailOptions = { from: 'michael.yeah@pm.me', to: email, subject: 'Account Verification Token', text: 'Hello,\n\n' + 'Please verify your account by clicking the link: ' + process.env.BASE_URL + 'confirmation\/' + token + '\n' };
+    
+    console.log("Mail: " + mailOptions);
+    transporter.sendMail(mailOptions, function(err){
+      if (err) { return res.status(500).send({msg: err.message}); }
+      res.status(200).send('A verification email has been sent to ' + email + '.');
+    });
   }
   catch(e)
   {
     errordb = e.toString();
   }
 
-  // REQUIRES:
-  // NODEMAILER, CRYPTO (INSTALLED BOTH ALREADY)
-
-  // make token for this user
-  // ************************
-  
-  // Save the verification token
-  // ***************************
-
-  // send the email
-  // **************
-
-  var ret = {error:errordb};
-  res.status(200).json(ret);
+  // WILL ERROR OUT WE HIT THE TRANSPORTER SEND MAIL ERROR.
+  // WILL ATTEMPT TO SET AND SEND HEADERS TWICE 
+  // var ret = {error:errordb};
+  // res.status(200).json(ret);
 
 });
+
+app.post('/confirmation/:token', async(req,res,next) =>
+{
+  // NEED TO HANDLE ERRORS.
+  // USER NOT FOUND, TOKEN NOT FOUND, etc.
+  const tokCheck = client.db();
+  const tokenCheck = await tokCheck.collection('User').findOne({token:req.params.token});
+  if (tokenCheck)
+  {
+    client.db().collection('User').updateOne({"token":req.params.token},{ $set : {"isVerified":"true"} },);
+  }
+  // maybe delete token after verification is successful?
+  res.status(200).send('Account verified.');
+})
 
 // fetches & returns the stock symbols current price
 async function fetchStock(stock)
@@ -179,12 +206,12 @@ app.post('/api/addStock', async(req, res, next) =>
   var d = new Date();
   let newDate = getDate(d);
   let newTime = getTime(d);
-  const db = client.db();
 
   // if stock user wants to add has been added by someone else, use that data inste
   // if stock has been added but has not been updated for 2 or more hours, refresh stock
   // maybe we can add user id's to the stocks they want to track? rather than adding
   // a shit ton of the same stock per user id (lol)
+  const db = client.db();
   const results = await db.collection('Stocks').find({symbol:stock}).toArray();
 
   if (results.length > 0)
