@@ -6,10 +6,12 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListSubheader from '@material-ui/core/ListSubheader';
 import DashboardIcon from '@material-ui/icons/Dashboard';
 import AccountBoxIcon from '@material-ui/icons/AccountBox';
-import ListIcon from '@material-ui/icons/List';
+//import ListIcon from '@material-ui/icons/List';
+import AddBoxIcon from '@material-ui/icons/AddBox';
 import ExitToApp from '@material-ui/icons/ExitToApp';
 import SettingsApplicationsIcon from '@material-ui/icons/SettingsApplications';
 import NotificationsActiveIcon from '@material-ui/icons/NotificationsActive';
+import SignOut from '../components/signoutbutton';
 
 export const mainListItems = (
   <div>
@@ -45,15 +47,15 @@ export const mainListItems = (
     </NavLink>
     <NavLink
     exact
-    to = "/Watchlist"
+    to = "/AddStock"
     className = "nav-link"
     activeClassName = "nav-link-active"
     >
     <ListItem button>
       <ListItemIcon>
-        <ListIcon />
+        <AddBoxIcon />
       </ListItemIcon>
-      <ListItemText primary="Watchlist" />
+      <ListItemText primary="Add Stock" />
     </ListItem>
     </NavLink>
   </div>
@@ -88,7 +90,8 @@ export const secondaryListItems = (
       <ListItemText primary="Notification Settings" />
     </ListItem>
     </NavLink>
-    <NavLink
+    <SignOut/>
+    {/*<NavLink
     exact
     to = "/SignOut"
     className = "nav-link"
@@ -100,6 +103,6 @@ export const secondaryListItems = (
       </ListItemIcon>
       <ListItemText primary="Sign Out" />
     </ListItem>
-    </NavLink>
+    </NavLink>*/}
   </div>
 );

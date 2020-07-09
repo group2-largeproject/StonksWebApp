@@ -12,8 +12,89 @@ import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import TimelineIcon from '@material-ui/icons/Timeline';
 
-export default function Profile(props){
-    return ({/*
+const BASE_URL = 'https://cop4331-large-group2.herokuapp.com/';
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+      backgroundColor: 'inherit',
+  },
+  paper: {
+    marginTop: theme.spacing(8),
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  avatar: {
+    margin: theme.spacing(1),
+    backgroundColor: theme.palette.primary.main,
+  },
+  form: {
+    width: '100%', // Fix IE 11 issue.
+    marginTop: theme.spacing(1),
+  },
+  submit: {
+    margin: theme.spacing(3, 0, 2),
+  },
+}));
+
+export default function AddStock(props){
+  const classes = useStyles();
+
+  var stockSymbol;
+  //var stockQuantity;
+
+  const [message,setMessage] = useState('');
+
+  const doStockAdd = async event => 
+    {
+        
+
+        event.preventDefault();
+
+        /*var js = 
+        '{"symbol":"' + stockSymbol.value + 
+        '","quantity":"' + stockQuantity.value 
+        +'"}';*/
+        
+        var js = 
+        '{"symbol":"' + stockSymbol.value + '"}';
+
+        try
+        {    
+            const response = await fetch(BASE_URL + 'api/addstock',
+            {
+              method:'POST',
+              body:js,
+              headers:
+              {
+                'Content-Type': 'application/json'
+              }
+            }
+            );
+
+            var res = JSON.parse(await response.text());
+
+            if( res.id <= 0 )
+            {
+                setMessage('User/Password combination incorrect');
+            }
+            else
+            {
+                var user = {firstName:res.firstName,lastName:res.lastName,id:res.id}
+                localStorage.setItem('user_data', JSON.stringify(user));
+
+                setMessage('');
+                window.location.href = '/Dashboard';
+            }
+        }
+        catch(e)
+        {
+            alert(e.toString());
+            return;
+        } 
+    };
+  
+  return (
       <div className={classes.root}>
       <Container component="main" maxWidth="xs">
         <CssBaseline />
@@ -25,28 +106,47 @@ export default function Profile(props){
             Add a Stock!
           </Typography>
           <form className={classes.form} noValidate>
-            <TextField
-              variant="outlined"
-              margin="normal"
-              required
-              fullWidth
-              id="stockSymbol"
-              label="Stock Symbol"
-              name="stockSymbol"
-              autoComplete="ABC"
-              ref={(c) => stockSymbol = c}
-              autoFocus
-            />
-            <TextField
-              variant="outlined"
-              margin="normal"
-              required
-              fullWidth
-              name="stockQuantity"
-              label="Amount"
-              id="stockQuantity"
-              ref={(c) => stockQuantity = c}
-            />
+            {/*<Grid item xs={12}>
+              <Grid item xs={6}>
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  id="stockSymbol"
+                  label="Stock Symbol"
+                  name="stockSymbol"
+                  autoComplete="ABC"
+                  ref={(c) => stockSymbol = c}
+                  autoFocus
+                />
+              </Grid>
+              <Grid item xs={6}>  
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  name="stockQuantity"
+                  label="Amount"
+                  id="stockQuantity"
+                  ref={(c) => stockQuantity = c}
+                />
+              </Grid>*/}
+              <Grid item xs={12}>
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  id="stockSymbol"
+                  label="Stock Symbol"
+                  name="stockSymbol"
+                  autoComplete="ABC"
+                  ref={(c) => stockSymbol = c}
+                  autoFocus
+                />    
+            </Grid>
             <Grid item xs={12}>
                 <span id="stockAddResult">{message}</span>
               </Grid>
@@ -64,5 +164,5 @@ export default function Profile(props){
         </div>
       </Container>
       </div>
-    */});
+    );
   }

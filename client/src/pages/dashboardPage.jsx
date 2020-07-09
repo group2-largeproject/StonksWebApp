@@ -123,7 +123,7 @@ export default function Dashboard() {
     setOpen(false);
   };
   const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
-
+  
   return (
     <div className={classes.root}>
       <CssBaseline />
@@ -145,14 +145,14 @@ export default function Dashboard() {
             height = "35"
           />
           </Typography>
-          <IconButton color="inherit">
+          {/*<IconButton color="inherit">
             <Badge 
             color = "error"
             badgeContent = {notificationAmount}
             >
               <NotificationsIcon />
             </Badge>
-          </IconButton>
+          </IconButton>*/}
         </Toolbar>
       </AppBar>
       <Drawer

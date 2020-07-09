@@ -47,7 +47,7 @@ function App() {
             <PrivateRoute path="/Dashboard" exact component={ Dashboard }/>
             <Route path="/ForgotPassword" exact component={ ForgotPage }/>
             <PrivateRoute path="/Profile" exact component={ ProfilePage }/>
-            <PrivateRoute path="/Profile" exact component={ AddStockPage }/>                  
+            <PrivateRoute path="/AddStock" exact component={ AddStockPage }/>                  
             <Redirect to="/" />      
           </Switch>   
         </Router>

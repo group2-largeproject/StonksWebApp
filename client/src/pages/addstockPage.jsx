@@ -144,14 +144,14 @@ export default function ProfilePage() {
             height = "35"
           />
           </Typography>
-          <IconButton color="inherit">
+          {/*<IconButton color="inherit">
             <Badge 
             color = "error"
             badgeContent = {5}
             >
               <NotificationsIcon />
             </Badge>
-          </IconButton>
+          </IconButton>*/}
         </Toolbar>
       </AppBar>
       <Drawer

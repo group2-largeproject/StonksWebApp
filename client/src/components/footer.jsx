@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from '@material-ui/core/Link'
 import Typography from '@material-ui/core/Typography'
+import CreateFakeUser from './fakeuser';
 
 export default function Footer() {
   
