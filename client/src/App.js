@@ -8,6 +8,7 @@ import RegisterPage from './pages/registerPage';
 import Dashboard    from './pages/dashboardPage';
 import ForgotPage   from './pages/forgotPage';
 import ProfilePage  from './pages/profilePage';
+import ProfilePage  from './pages/profilePage';
 import Footer       from './components/footer';
 
 //Auth
@@ -45,7 +46,8 @@ function App() {
             <Route path="/Register" exact component={ RegisterPage }/>     
             <PrivateRoute path="/Dashboard" exact component={ Dashboard }/>
             <Route path="/ForgotPassword" exact component={ ForgotPage }/>
-            <PrivateRoute path="/Profile" exact component={ ProfilePage }/>                 
+            <PrivateRoute path="/Profile" exact component={ ProfilePage }/>
+            <PrivateRoute path="/Profile" exact component={ AddStockPage }/>                  
             <Redirect to="/" />      
           </Switch>   
         </Router>

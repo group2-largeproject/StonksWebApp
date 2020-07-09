@@ -1,10 +1,9 @@
 import React from 'react';
+import { useState } from 'react';
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
 import Link from '@material-ui/core/Link';
 import Grid from '@material-ui/core/Grid';
 import LockOpenIcon from '@material-ui/icons/LockOpen';
@@ -12,18 +11,49 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 
-const BASE_URL = 'https://www..herokuapp.com';
+const BASE_URL = 'https://cop4331-large-group2.herokuapp.com/';
 
-const doLogin = async event => 
+const useStyles = makeStyles((theme) => ({
+  root: {
+      backgroundColor: 'inherit',
+  },
+  paper: {
+    marginTop: theme.spacing(8),
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  avatar: {
+    margin: theme.spacing(1),
+    backgroundColor: theme.palette.primary.main,
+  },
+  form: {
+    width: '100%', // Fix IE 11 issue.
+    marginTop: theme.spacing(1),
+  },
+  submit: {
+    margin: theme.spacing(3, 0, 2),
+  },
+}));
+
+export default function Login() {
+  const classes = useStyles();
+
+  var loginUsername;
+  var loginPassword;
+
+  const [message,setMessage] = useState('');
+
+  const doLogin = async event => 
     {
+        
+
         event.preventDefault();
 
-        window.location.href="/Dashboard"; 
-
-        {/*var js = '{"login":"'
-            + loginName.value
-            + '","password":"'
-            + loginPassword.value +'"}';
+        var js = 
+        '{"username":"' + loginUsername.value + 
+        '","password":"' + loginPassword.value 
+        +'"}';
 
         try
         {    
@@ -57,36 +87,8 @@ const doLogin = async event =>
         {
             alert(e.toString());
             return;
-        }*/}   
+        } 
     };
-
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-      backgroundColor: 'inherit',
-  },
-  paper: {
-    marginTop: theme.spacing(8),
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
-  avatar: {
-    margin: theme.spacing(1),
-    backgroundColor: theme.palette.primary.main,
-  },
-  form: {
-    width: '100%', // Fix IE 11 issue.
-    marginTop: theme.spacing(1),
-  },
-  submit: {
-    margin: theme.spacing(3, 0, 2),
-  },
-}));
-
-export default function Login() {
-  const classes = useStyles();
-
   
 
   return (
@@ -106,10 +108,11 @@ export default function Login() {
             margin="normal"
             required
             fullWidth
-            id="username"
+            id="loginUsername"
             label="Username"
             name="username"
             autoComplete="username"
+            ref={(c) => loginUsername = c}
             autoFocus
           />
           <TextField
@@ -120,13 +123,13 @@ export default function Login() {
             name="password"
             label="Password"
             type="password"
-            id="password"
+            id="loginPassword"
             autoComplete="current-password"
+            ref={(c) => loginPassword = c}
           />
-          <FormControlLabel
-            control={<Checkbox value="remember" color="primary" />}
-            label="Remember me"
-          />
+          <Grid item xs={12}>
+              <span id="loginResult">{message}</span>
+            </Grid>
           <Button
             type="submit"
             fullWidth

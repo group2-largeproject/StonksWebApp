@@ -5,17 +5,24 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import Drawer from '@material-ui/core/Drawer';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
+import List from '@material-ui/core/List';
+import Menu from '@material-ui/core/Menu';
 import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
 import Badge from '@material-ui/core/Badge';
 import Container from '@material-ui/core/Container';
+import Grid from '@material-ui/core/Grid';
+import Paper from '@material-ui/core/Paper';
 import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import NotificationsIcon from '@material-ui/icons/Notifications';
+//import { mainListItems} from '../components/listItems';
 import { mainListItems, secondaryListItems } from '../components/listItems';
+//import { mainMenuItems, secondaryMenuItems } from '../components/menuItems'; 
+//import ReactiveList from '../components/reactivelist';
 import { MenuList } from '@material-ui/core';
-import Profile from '../components/profile';
+import AddStock from '../components/addstock';
 import logo from '../media/StonksMainLogo.png';
 
 const drawerWidth = 240;
@@ -114,7 +121,7 @@ export default function ProfilePage() {
   const handleDrawerClose = () => {
     setOpen(false);
   };
-  //const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
+  const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
 
   return (
     <div className={classes.root}>
@@ -167,7 +174,7 @@ export default function ProfilePage() {
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
         <Container maxWidth="lg" className={classes.container}>
-          <Profile />
+          <AddStock />
         </Container>
       </main>
     </div>
