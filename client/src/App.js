@@ -8,7 +8,7 @@ import RegisterPage from './pages/registerPage';
 import Dashboard    from './pages/dashboardPage';
 import ForgotPage   from './pages/forgotPage';
 import ProfilePage  from './pages/profilePage';
-import ProfilePage  from './pages/profilePage';
+import AddStockPage  from './pages/addstockPage';
 import Footer       from './components/footer';
 
 //Auth

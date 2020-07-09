@@ -13,7 +13,7 @@ import Container from '@material-ui/core/Container';
 import TimelineIcon from '@material-ui/icons/Timeline';
 
 export default function Profile(props){
-    return (
+    return ({/*
       <div className={classes.root}>
       <Container component="main" maxWidth="xs">
         <CssBaseline />
@@ -64,5 +64,5 @@ export default function Profile(props){
         </div>
       </Container>
       </div>
-      );
+    */});
   }
