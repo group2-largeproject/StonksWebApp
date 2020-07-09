@@ -12,6 +12,7 @@ const crypto = require('crypto')
 const nodemailer = require('nodemailer')
 const { restart } = require('nodemon')
 const session = require('express-session')
+const cookieParser = require('cookie-parser')
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -97,7 +98,7 @@ const registerSchema = Joi.object({
 });
 
 // basic register api, only takes in username and password
-app.post('/api/register', async (req, res, next) =>
+app.post('/register', async (req, res, next) =>
 {
   var errordb = '';
   let verified = "false";
