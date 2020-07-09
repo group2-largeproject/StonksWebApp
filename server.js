@@ -1,16 +1,17 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const path = require('path');
-const Joi = require('joi');
-const validator = require('express-joi-validation').createValidator({});
-const app = express();
-const mongoose = require('mongoose');
-const { IEXCloudClient } = require('node-iex-cloud');
-const fetch = require('node-fetch');
-const crypto = require('crypto');
-const nodemailer = require('nodemailer');
-const { restart } = require('nodemon');
+const express = require('express')
+const bodyParser = require('body-parser')
+const cors = require('cors')
+const path = require('path')
+const Joi = require('joi')
+const validator = require('express-joi-validation').createValidator({})
+const app = express()
+const mongoose = require('mongoose')
+const { IEXCloudClient } = require('node-iex-cloud')
+const fetch = require('node-fetch')
+const crypto = require('crypto')
+const nodemailer = require('nodemailer')
+const { restart } = require('nodemon')
+const session = require('express-session')
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -87,9 +88,12 @@ app.post('/api/login', async (req, res, next) =>
 const registerSchema = Joi.object({
   username: Joi.string().required(),
   password: Joi.string().required().alphanum().min(8).max(20),
+  firstName: Joi.string().required(),
+  lastName: Joi.string().required(),
   email: Joi.string().email().required(),
   isVerified: Joi.string().required(),
-  token: Joi.required()
+  token: Joi.required(),
+  dateCreated: Joi.required()
 });
 
 // basic register api, only takes in username and password
@@ -97,17 +101,19 @@ app.post('/api/register', async (req, res, next) =>
 {
   var errordb = '';
   let verified = "false";
+  var d = new Date();
+  let newDate = getDate(d);
 
   // accept user input & format it to be entered into database
-  const {username, password, email} = req.body;
+  const {username, password, email, firstName, lastName} = req.body;
 
-  // MAKE SURE USER EMAIL IS NOT IN USE, SPIT ERROR IF IT IS
+  // Checks to see if the email is in use, if it is then it won't let the user sign up.
   const emailDbCheck = client.db();
   const emailCheck = await emailDbCheck.collection('User').findOne({email:email});
   if (emailCheck) return res.status(400).send({msg: "The email address you have entered is already associated with another account."});
 
   const token = crypto.randomBytes(16).toString('hex');
-  const newUser = {username:username, password:password, email:email, isVerified:verified, token:token};
+  const newUser = {dateCreated:newDate, username:username, password:password, email:email, firstName:firstName, lastName:lastName, isVerified:verified, token:token};
   const {error} = Joi.validate(newUser, registerSchema);
 
   // joi error check
@@ -119,12 +125,11 @@ app.post('/api/register', async (req, res, next) =>
     const db = client.db();
     db.collection('User').insertOne(newUser);
     // db.collection('User').updateOne({"email":email},{ $set : {"token":token} },);
-    console.log("SHITAHS ANSLKNASTA LKSALKSG BAKLSBGKASBG KLASK");
+    // console.log("SHITAHS ANSLKNASTA LKSALKSG BAKLSBGKASBG KLASK");
     // send email?
     var transporter = nodemailer.createTransport({ service: 'Sendgrid', auth: { user: process.env.SENDGRID_USERNAME, pass: process.env.SENDGRID_PASSWORD } });
     var mailOptions = { from: 'michael.yeah@pm.me', to: email, subject: 'Account Verification Token', text: 'Hello,\n\n' + 'Please verify your account by clicking the link: ' + process.env.BASE_URL + 'confirmation\/' + token + '\n' };
-    
-    console.log("Mail: " + mailOptions);
+ 
     transporter.sendMail(mailOptions, function(err){
       if (err) { return res.status(500).send({msg: err.message}); }
       res.status(200).send('A verification email has been sent to ' + email + '.');
@@ -142,10 +147,10 @@ app.post('/api/register', async (req, res, next) =>
 
 });
 
+// NEED TO HANDLE ERRORS.
+// USER NOT FOUND, TOKEN NOT FOUND, etc.
 app.post('/confirmation/:token', async(req,res,next) =>
 {
-  // NEED TO HANDLE ERRORS.
-  // USER NOT FOUND, TOKEN NOT FOUND, etc.
   const tokCheck = client.db();
   const tokenCheck = await tokCheck.collection('User').findOne({token:req.params.token});
   if (tokenCheck)
@@ -207,7 +212,7 @@ app.post('/api/addStock', async(req, res, next) =>
   let newDate = getDate(d);
   let newTime = getTime(d);
 
-  // if stock user wants to add has been added by someone else, use that data inste
+  // if stock user wants to add has been added by someone else, use that data instead
   // if stock has been added but has not been updated for 2 or more hours, refresh stock
   // maybe we can add user id's to the stocks they want to track? rather than adding
   // a shit ton of the same stock per user id (lol)
