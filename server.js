@@ -32,12 +32,12 @@ const uri = process.env.MONGO_URL;
 const client = new MongoClient(uri);
 
 app.set('port', 5000);
-app.use(express.static(path.join(__dirname, '/client/public')));
+app.use(express.static(path.join(__dirname, '/client/build')));
 
 client.connect();
 
-// app.use(express.urlencoded({ extended: true })); 
-// app.use(express.json());
+app.use(express.urlencoded({ extended: true })); 
+app.use(express.json());
 // app.use('/api', router); 
 
 mongoose.connect(uri, { useNewUrlParser: true, useFindAndModify: false }); 
@@ -49,7 +49,7 @@ mongoose.connection.on('error', function(error) {
 });
 
 app.get('*', (req,res) => {
-    res.sendFile(path.join(__dirname + '/client/public/index.html'))
+    res.sendFile(path.join(__dirname + '/client/build/index.html'))
 });
 
 
