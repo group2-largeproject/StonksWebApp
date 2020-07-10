@@ -36,27 +36,49 @@ const useStyles = makeStyles((theme) => ({
 export default function Register() {
   const classes = useStyles();
 
-  var registerUsername;
-  var registerPassword;
-  var registerEmail;
+  const [state , setState] = useState({
+    registerUsername : "",
+    registerPassword : "",
+    registerConfirmPassword : "",
+    registerEmail : "",
+    registerFirstName : "",
+    registerLastName : ""
+  })
+  const handleChange = (e) => {
+    const {id , value} = e.target   
+    setState(prevState => ({
+        ...prevState,
+        [id] : value
+    }))
+  }
 
   const [message,setMessage] = useState('');
 
-  const doregister = async event => 
+  const doRegister = async event => 
     {
-        
+      event.preventDefault();
 
-        event.preventDefault();
-
+      if( state.registerUsername == '' || state.registerPassword == '' || state.registerEmail == '' || state.registerFirstName == '' || state.registerLastName == '' || state.registerConfirmPassword == '' ){
+        setMessage('Please fill out all fields!');
+      }
+      else if( state.registerPassword.length <= 6 ){
+        setMessage('Password must have a length of 6 or more!');
+      }
+      else if( state.registerPassword != state.registerConfirmPassword ){
+        setMessage('Passwords do not match!');
+      }
+      else{
         var js = 
-        '{"username":"' + registerUsername.value + 
-        '","password":"' + registerPassword.value +
-        '","email":"' + registerEmail.value 
+        '{"username":"' + state.registerUsername + 
+        '","password":"' + state.registerPassword +
+        '","email":"' + state.registerEmail +
+        '","firstName":"' + state.registerFirstName +
+        '","lastName":"' + state.registerLastName
         +'"}';
 
         try
         {    
-            const response = await fetch(BASE_URL + 'api/register',
+            const response = await fetch(BASE_URL + 'register', //change to /api/register server side
             {
               method:'POST',
               body:js,
@@ -66,27 +88,20 @@ export default function Register() {
               }
             }
             );
-
-            var res = JSON.parse(await response.text());
-
-            if( res.id <= 0 )
-            {
-                setMessage('User/Password combination incorrect');
+            if(response.status != ''){ //temp for testing, probably should find a better way to handle errors between front/backends
+              setMessage(response.statusText)
             }
-            else
-            {
-                var user = {firstName:res.firstName,lastName:res.lastName,id:res.id}
-                localStorage.setItem('user_data', JSON.stringify(user));
+            
+            //var res = JSON.parse(await response.text());
 
-                setMessage('');
-                window.location.href = '/Dashboard';
-            }
+            
         }
         catch(e)
         {
             alert(e.toString());
             return;
-        } 
+        }
+      } 
     };
 
   return (
@@ -106,11 +121,13 @@ export default function Register() {
                 variant="outlined"
                 required
                 fullWidth
-                id="username"
+                id="registerUsername"
                 label="Username"
                 name="Username"
                 autoComplete="username"
-                ref={(c) => registerUsername = c}
+                value = {state.registerUsername}
+                onChange={handleChange}
+                autoFocus
               />
             </Grid>
             <Grid item xs={12}>
@@ -118,11 +135,12 @@ export default function Register() {
                 variant="outlined"
                 required
                 fullWidth
-                id="email"
+                id="registerEmail"
                 label="Email Address"
                 name="email"
                 autoComplete="email"
-                ref={(c) => registerEmail = c}
+                value = {state.registerEmail}
+                onChange={handleChange}
               />
             </Grid>
             <Grid item xs={12}>
@@ -133,10 +151,48 @@ export default function Register() {
                 name="password"
                 label="Password"
                 type="password"
-                id="password"
+                id="registerPassword"
                 autoComplete="current-password"
-                ref={(c) => registerPassword = c}
+                value = {state.registerPassword}
+                onChange={handleChange}
               />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                variant="outlined"
+                required
+                fullWidth
+                name="confirmPassword"
+                label="Confirm Password"
+                type="password"
+                id="registerConfirmPassword"                
+                value = {state.registerConfirmPassword}
+                onChange={handleChange}
+              />
+            </Grid>
+            <Grid item xs={6}>
+            <TextField
+              variant="outlined"
+              required
+              fullWidth
+              name="First Name"
+              label="First Name"
+              id="registerFirstName"
+              value = {state.registerFirstName}
+              onChange={handleChange}
+            />
+            </Grid>
+            <Grid item xs={6}>
+            <TextField
+              variant="outlined"
+              required
+              fullWidth
+              name="Last Name"
+              label="Last Name"
+              id="registerLastName"
+              value = {state.registerLastName}
+              onChange={handleChange}
+            />
             </Grid>
             <Grid item xs={12}>
               <span id="registerResult">{message}</span>
@@ -148,7 +204,7 @@ export default function Register() {
             variant="contained"
             color="primary"
             className={classes.submit}
-            onClick={doregister}
+            onClick={doRegister}
           >
             Sign Up
           </Button>
