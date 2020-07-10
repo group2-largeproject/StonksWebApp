@@ -39,8 +39,8 @@ const useStyles = makeStyles((theme) => ({
 export default function Login() {
   const classes = useStyles();
 
-  var loginUsername;
-  var loginPassword;
+  var loginUser = loginUsername.value;
+  var loginPass = loginPassword.value;
 
   const [message,setMessage] = useState('');
 
@@ -51,8 +51,8 @@ export default function Login() {
         event.preventDefault();
 
         var js = 
-        '{"username":"' + loginUsername.value + 
-        '","password":"' + loginPassword.value 
+        '{"username":"' + loginUser + 
+        '","password":"' + loginPass 
         +'"}';
 
         try
