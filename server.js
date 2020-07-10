@@ -85,8 +85,8 @@ app.post('/api/login', async (req, res, next) =>
     error = "Account needs to be verified.";
   }
   // set session cookie for logout / activity
-  // var ret = {userId:id, firstName:fn, lastName:ln, error:error};
-  var ret = {username:uname,email:email,id:id,error:error};
+  var ret = {userId:id, firstName:fn, lastName:ln, error:error};
+//   var ret = {username:uname,email:email,id:id,error:error};
   res.status(200).json(ret);
 });
 
