@@ -54,7 +54,7 @@ app.get('*', (req,res) => {
 });
 
 
-app.post('api/login', async (req, res, next) =>
+app.post('/api/login', async (req, res, next) =>
 {
   var error = '';
 
