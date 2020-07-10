@@ -14,16 +14,16 @@ const { restart } = require('nodemon')
 const session = require('express-session')
 const cookieParser = require('cookie-parser')
 
-app.use(cors());
-app.use(bodyParser.json());
-require('dotenv').config();
-
 const iex = new IEXCloudClient(fetch, {
   sandbox: true,
   publishable: process.env.STONK_TOK,
   version: "stable"
 });
 
+app.use(cors())
+app.use(bodyParser.json())
+app.use(session({secret: process.env.SECRET}))
+require('dotenv').config();
 
 // const router = require('./routes/index');
 
@@ -34,11 +34,11 @@ const client = new MongoClient(uri);
 
 app.set('port', 5000);
 app.use(express.static(path.join(__dirname, '/client/build')));
+app.use(express.urlencoded({ extended: true })); 
+app.use(express.json());
 
 client.connect();
 
-app.use(express.urlencoded({ extended: true })); 
-app.use(express.json());
 // app.use('/api', router); 
 
 mongoose.connect(uri, { useNewUrlParser: true, useFindAndModify: false }); 
@@ -65,12 +65,15 @@ app.post('/api/login', async (req, res, next) =>
   var id = -1;
   var fn = '';
   var ln = '';
-
+  var uname = '';
+  var email = '';
   if ( results.length > 0 )
   {
     id = results[0]._id;
     fn = results[0].firstName;
     ln = results[0].lastName;
+    uname = results[0].username;
+    email = results[0].email;
   }
   else
   {
@@ -82,7 +85,8 @@ app.post('/api/login', async (req, res, next) =>
     error = "Account needs to be verified.";
   }
   // set session cookie for logout / activity
-  var ret = {userId:id, firstName:fn, lastName:ln, error:error};
+  // var ret = {userId:id, firstName:fn, lastName:ln, error:error};
+  var ret = {username:uname,email:email,id:id,error:error};
   res.status(200).json(ret);
 });
 
