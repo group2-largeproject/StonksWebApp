@@ -39,20 +39,30 @@ const useStyles = makeStyles((theme) => ({
 export default function Login() {
   const classes = useStyles();
 
-  var loginUsername;
-  var loginPassword;
+  const [state , setState] = useState({
+    loginUsername : "",
+    loginPassword : ""
+  })
+  const handleChange = (e) => {
+    const {id , value} = e.target   
+    setState(prevState => ({
+        ...prevState,
+        [id] : value
+    }))
+  }
 
   const [message,setMessage] = useState('');
 
   const doLogin = async event => 
     {
-        
-
-        event.preventDefault();
-
+      event.preventDefault();     
+      if( state.loginUsername == '' || state.loginPassword == '' ){
+        setMessage('Please fill out all fields!');
+      }
+      else{
         var js = 
-        '{"username":"' + loginUsername.value + 
-        '","password":"' + loginPassword.value 
+        '{"username":"' + state.loginUsername + 
+        '","password":"' + state.loginPassword 
         +'"}';
 
         try
@@ -70,27 +80,26 @@ export default function Login() {
 
             var res = JSON.parse(await response.text());
 
-            if( res.id <= 0 )
+            if( res.error !=  '' )
             {
-                setMessage('User/Password combination incorrect');
+                setMessage(res.error);
             }
             else
             {
-                var user = {usename:res.username,email:res.email,id:res.id}
-                localStorage.setItem('user_data', JSON.stringify(user));
+                /*var user = {usename:res.username,email:res.email,id:res.id}
+                localStorage.setItem('user_data', JSON.stringify(user));*/
 
-                setMessage('');
-                window.location.href = '/Dashboard';
+                setMessage('Login Successful');
+                /*window.location.href = '/Dashboard';*/
             }
         }
         catch(e)
         {
             alert(e.toString());
             return;
-        } 
+        }
+      } 
     };
-  
-
   return (
     <div className={classes.root}>
     <Container component="main" maxWidth="xs">
@@ -112,7 +121,8 @@ export default function Login() {
             label="Username"
             name="username"
             autoComplete="username"
-            ref={(c) => loginUsername = c}
+            value = {state.loginUsername}
+            onChange={handleChange}
             autoFocus
           />
           <TextField
@@ -125,7 +135,8 @@ export default function Login() {
             type="password"
             id="loginPassword"
             autoComplete="current-password"
-            ref={(c) => loginPassword = c}
+            value = {state.loginPassword}
+            onChange={handleChange}
           />
           <Grid item xs={12}>
               <span id="loginResult">{message}</span>
