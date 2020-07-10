@@ -22,7 +22,7 @@ const iex = new IEXCloudClient(fetch, {
 
 app.use(cors())
 app.use(bodyParser.json())
-app.use(session({secret: process.env.SECRET}))
+// app.use(session({secret: process.env.SECRET}))
 require('dotenv').config();
 
 // const router = require('./routes/index');
@@ -53,41 +53,83 @@ app.get('*', (req,res) => {
     res.sendFile(path.join(__dirname + '/client/build/index.html'))
 });
 
+var genRandomString = function(length){
+  return crypto.randomBytes(Math.ceil(length/2))
+          .toString('hex') /** convert to hexadecimal format */
+          .slice(0,length);   /** return required number of characters */
+};
+
+var sha512 = function(password, salt){
+  var hash = crypto.createHmac('sha512', salt); /** Hashing algorithm sha512 */
+  hash.update(password);
+  var value = hash.digest('hex');
+  return {
+      salt:salt,
+      passwordHash:value
+  };
+};
+
+function saltHashPassword(userpassword) {
+  var salt = genRandomString(16); /** Gives us salt of length 16 */
+  var passwordData = sha512(userpassword, salt);
+  console.log('UserPassword = '+userpassword);
+  console.log('Passwordhash = '+passwordData.passwordHash);
+  console.log('nSalt = '+passwordData.salt);
+
+  return {
+    passwordHash:passwordData.passwordHash,
+    salt:passwordData.salt
+  };
+}
 
 app.post('/api/login', async (req, res, next) =>
 {
   var error = '';
-
-  const {username, password} = req.body;
-  const db = client.db();
-  const results = await db.collection('User').find({username:username,password:password}).toArray();
-
   var id = -1;
   var fn = '';
   var ln = '';
   var uname = '';
   var email = '';
-  if ( results.length > 0 )
+
+  const {username, password} = req.body;
+  const db = client.db();
+  const results2 = await db.collection('User').find({username:username}).toArray();
+
+  // username is valid
+  if (results2.length > 0)
   {
-    id = results[0]._id;
-    fn = results[0].firstName;
-    ln = results[0].lastName;
-    uname = results[0].username;
-    email = results[0].email;
-  }
-  else
-  {
-    error = 'Invalid username/password';
+    hashedPass = sha512(password, results2[0].salt);
+
+    // determines whether or not the passwords match
+    const results = await db.collection('User').find({username:username,password:hashedPass.passwordHash}).toArray();
+    
+    // username valid, password valid, account verified
+    if (results.length > 0 && results[0].isVerified == "true"){
+      id = results[0]._id;
+      fn = results[0].firstName;
+      ln = results[0].lastName;
+      uname = results[0].username;
+      email = results[0].email;
+    }
+    
+    // username valid, password valid, account is not verified
+    else if (results.length > 0 && results[0].isVerified == "false")
+      error = "Account needs to be verified.";
+    
+    // password is invalid
+    else
+      error = 'Invalid username/password';
+  
   }
 
-  if(results.length > 0 && results[0].isVerified == "false")
-  {
-    error = "Account needs to be verified.";
-  }
-  // set session cookie for logout / activity
-//   var ret = {userId:id, firstName:fn, lastName:ln, error:error};
+  // if username is invalid
+  else
+    error = 'Invalid username/password';
+    
   var ret = {username:uname,email:email,id:id,error:error};
-  res.status(200).json(ret);
+  res.status(200).json(ret); 
+  // set session cookie for logout / activity
+  // var ret = {userId:id, firstName:fn, lastName:ln, error:error};
 });
 
 const registerSchema = Joi.object({
@@ -98,10 +140,12 @@ const registerSchema = Joi.object({
   email: Joi.string().email().required(),
   isVerified: Joi.string().required(),
   token: Joi.required(),
-  dateCreated: Joi.required()
+  dateCreated: Joi.required(),
+  salt: Joi.string().required()
 });
 
 // basic register api, only takes in username and password
+// WORK ON THE RETURN JSON DATA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 app.post('/register', async (req, res, next) =>
 {
   var errordb = '';
@@ -112,14 +156,21 @@ app.post('/register', async (req, res, next) =>
   // accept user input & format it to be entered into database
   const {username, password, email, firstName, lastName} = req.body;
 
+  var {passwordHash, salt} = saltHashPassword(password);
+  // salted it ^ !!!
+  // temp.passwordHash = hashed password && temp.salt = salt
+
   // Checks to see if the email is in use, if it is then it won't let the user sign up.
   const emailDbCheck = client.db();
   const emailCheck = await emailDbCheck.collection('User').findOne({email:email});
   if (emailCheck) return res.status(400).send({msg: "The email address you have entered is already associated with another account."});
 
   const token = crypto.randomBytes(16).toString('hex');
-  const newUser = {dateCreated:newDate, username:username, password:password, email:email, firstName:firstName, lastName:lastName, isVerified:verified, token:token};
+  // passing new user data to joi for validation before we send him off to boating school
+  // after validation, we pull the ol' 1-2 switcheroo and swap the og password with the hashed password.
+  var newUser = {dateCreated:newDate, username:username, password:password, salt:salt, email:email, firstName:firstName, lastName:lastName, isVerified:verified, token:token};
   const {error} = Joi.validate(newUser, registerSchema);
+  var newUser = {dateCreated:newDate, username:username, password:passwordHash, salt:salt, email:email, firstName:firstName, lastName:lastName, isVerified:verified, token:token};
 
   // joi error check
   if(error) return res.status(400).send(error.details[0].message);
@@ -154,6 +205,7 @@ app.post('/register', async (req, res, next) =>
 
 // NEED TO HANDLE ERRORS.
 // USER NOT FOUND, TOKEN NOT FOUND, etc.
+// ERASE TOKEN AFTER CONFIRMATION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 app.post('/confirmation/:token', async(req,res,next) =>
 {
   const tokCheck = client.db();
@@ -209,6 +261,7 @@ function getTime(d)
 }
 
 // https://www.npmjs.com/package/node-iex-cloud
+// WORK ON THE RETURN JSON DATA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 app.post('/api/addStock', async(req, res, next) => 
 {
   var error = '';
@@ -264,6 +317,18 @@ app.post('/api/addStock', async(req, res, next) =>
     res.status(200).json(ret);
   }
 })
+
+// DELETE STOCK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// USER SETTINGS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+// FORGOT PASSWORD!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// User submits email -> validate they exist in the db -> recovery token
+// -> (BASE_URL + recovTok) send user recovery email -> click link -> set recoveryMode: true 
+// -> user lands on password reset page -> if(recoveryMode) -> new password -> delete token
+
+
+// NOTIFICATION SETTINGS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// SIGN OUT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 app.use((req, res, next) => 
 {  
