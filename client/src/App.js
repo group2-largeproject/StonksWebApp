@@ -3,17 +3,18 @@ import { BrowserRouter as Router, Route, Redirect, Switch } from 'react-router-d
 import './App.css';
 
 //Pages
-import LoginPage    from '../src/pages/loginPage';
-import RegisterPage from './pages/registerPage';
-import Dashboard    from './pages/dashboardPage';
-import ForgotPage   from './pages/forgotPage';
-import ProfilePage  from './pages/profilePage';
-import AddStockPage  from './pages/addstockPage';
-import Footer       from './components/footer';
+import LoginPage            from '../src/pages/loginPage';
+import RegisterPage         from './pages/registerPage';
+import Dashboard            from './pages/dashboardPage';
+import ForgotPage           from './pages/forgotPage';
+import ProfilePage          from './pages/profilePage';
+import AddStockPage         from './pages/addstockPage';
+import AccountSettingsPage  from './pages/accountsettingsPage';
+import Footer               from './components/footer';
 
 //Auth
-import PrivateRoute from '../src/PrivateRoute';
-import { AuthContext } from './context/auth';
+import PrivateRoute     from '../src/PrivateRoute';
+import { AuthContext }  from './context/auth';
 
 //Themeing
 import { createMuiTheme } from "@material-ui/core/styles";
@@ -47,7 +48,8 @@ function App() {
             <PrivateRoute path="/Dashboard" exact component={ Dashboard }/>
             <Route path="/ForgotPassword" exact component={ ForgotPage }/>
             <PrivateRoute path="/Profile" exact component={ ProfilePage }/>
-            <PrivateRoute path="/AddStock" exact component={ AddStockPage }/>                  
+            <PrivateRoute path="/AddStock" exact component={ AddStockPage }/> 
+            <PrivateRoute path="/AccountSettings" exact component={ AccountSettingsPage }/>                  
             <Redirect to="/" />      
           </Switch>   
         </Router>

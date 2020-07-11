@@ -11,6 +11,7 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import TimelineIcon from '@material-ui/icons/Timeline';
+import { Paper } from '@material-ui/core';
 
 const BASE_URL = 'https://cop4331-large-group2.herokuapp.com/';
 
@@ -23,6 +24,11 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+  },
+  paper2: {
+    padding: theme.spacing(2),
+    textAlign: 'center',
+    color: theme.palette.text.secondary,
   },
   avatar: {
     margin: theme.spacing(1),
@@ -37,31 +43,32 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function AddStock(props){
+export default function AddStock(){
   const classes = useStyles();
 
-  var stockSymbol;
-  //var stockQuantity;
+  const [state , setState] = useState({
+    stockSymbol : ""
+  })
+  const handleChange = (e) => {
+    const {id , value} = e.target   
+    setState(prevState => ({
+        ...prevState,
+        [id] : value
+    }))
+  }
 
   const [message,setMessage] = useState('');
 
   const doStockAdd = async event => 
     {
-        
-
         event.preventDefault();
-
-        /*var js = 
-        '{"symbol":"' + stockSymbol.value + 
-        '","quantity":"' + stockQuantity.value 
-        +'"}';*/
         
         var js = 
-        '{"symbol":"' + stockSymbol.value + '"}';
+        '{"stock":"' + state.stockSymbol + '"}';
 
         try
         {    
-            const response = await fetch(BASE_URL + 'api/addstock',
+            const response = await fetch(BASE_URL + 'api/addStock',
             {
               method:'POST',
               body:js,
@@ -74,17 +81,12 @@ export default function AddStock(props){
 
             var res = JSON.parse(await response.text());
 
-            if( res.id <= 0 )
+            if( res.error != '' )
             {
-                setMessage('User/Password combination incorrect');
+                setMessage(res.error);
             }
-            else
-            {
-                var user = {firstName:res.firstName,lastName:res.lastName,id:res.id}
-                localStorage.setItem('user_data', JSON.stringify(user));
-
-                setMessage('');
-                window.location.href = '/Dashboard';
+            else{
+              setMessage('Stock added successfully!')
             }
         }
         catch(e)
@@ -97,6 +99,7 @@ export default function AddStock(props){
   return (
       <div className={classes.root}>
       <Container component="main" maxWidth="xs">
+        <Paper className={classes.paper2}>
         <CssBaseline />
         <div className={classes.paper}>
           <Avatar className={classes.avatar}>
@@ -143,7 +146,8 @@ export default function AddStock(props){
                   label="Stock Symbol"
                   name="stockSymbol"
                   autoComplete="ABC"
-                  ref={(c) => stockSymbol = c}
+                  value = {state.stockSymbol}
+                  onChange = {handleChange}
                   autoFocus
                 />    
             </Grid>
@@ -162,6 +166,7 @@ export default function AddStock(props){
             </Button>
           </form>
         </div>
+        </Paper>  
       </Container>
       </div>
     );

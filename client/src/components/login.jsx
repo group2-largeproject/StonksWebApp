@@ -86,7 +86,7 @@ export default function Login() {
             }
             else
             {
-                /*var user = {usename:res.username,email:res.email,id:res.id}
+                /*var user = {username:res.username,email:res.email,id:res.id,fname:res.firstName,lname:res.lastName}
                 localStorage.setItem('user_data', JSON.stringify(user));*/
 
                 setMessage('Login Successful');
