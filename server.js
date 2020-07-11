@@ -72,9 +72,9 @@ var sha512 = function(password, salt){
 function saltHashPassword(userpassword) {
   var salt = genRandomString(16); /** Gives us salt of length 16 */
   var passwordData = sha512(userpassword, salt);
-  console.log('UserPassword = '+userpassword);
-  console.log('Passwordhash = '+passwordData.passwordHash);
-  console.log('nSalt = '+passwordData.salt);
+  // console.log('UserPassword = '+userpassword);
+  // console.log('Passwordhash = '+passwordData.passwordHash);
+  // console.log('nSalt = '+passwordData.salt);
 
   return {
     passwordHash:passwordData.passwordHash,
@@ -145,7 +145,6 @@ const registerSchema = Joi.object({
 });
 
 // basic register api, only takes in username and password
-// WORK ON THE RETURN JSON DATA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 app.post('/register', async (req, res, next) =>
 {
   var errordb = '';
@@ -170,7 +169,7 @@ app.post('/register', async (req, res, next) =>
   // after validation, we pull the ol' 1-2 switcheroo and swap the og password with the hashed password.
   var newUser = {dateCreated:newDate, username:username, password:password, salt:salt, email:email, firstName:firstName, lastName:lastName, isVerified:verified, token:token};
   const {error} = Joi.validate(newUser, registerSchema);
-  var newUser = {dateCreated:newDate, username:username, password:passwordHash, salt:salt, email:email, firstName:firstName, lastName:lastName, isVerified:verified, token:token};
+  var newUser = {dateCreated:newDate, username:username, password:passwordHash, salt:salt, email:email, firstName:firstName, lastName:lastName, isVerified:verified, token:token, recoveryMode:"false"};
 
   // joi error check
   if(error) return res.status(400).send(error.details[0].message);
@@ -180,16 +179,9 @@ app.post('/register', async (req, res, next) =>
   {
     const db = client.db();
     db.collection('User').insertOne(newUser);
-    // db.collection('User').updateOne({"email":email},{ $set : {"token":token} },);
-    // console.log("SHITAHS ANSLKNASTA LKSALKSG BAKLSBGKASBG KLASK");
-    // send email?
+    
     var transporter = nodemailer.createTransport({ service: 'Sendgrid', auth: { user: process.env.SENDGRID_USERNAME, pass: process.env.SENDGRID_PASSWORD } });
     var mailOptions = { from: 'michael.yeah@pm.me', to: email, subject: 'Account Verification Token', text: 'Hello,\n\n' + 'Please verify your account by clicking the link: ' + process.env.BASE_URL + 'confirmation\/' + token + '\n' };
- 
-    transporter.sendMail(mailOptions, function(err){
-      if (err) { return res.status(500).send({msg: err.message}); }
-      res.status(200).send('A verification email has been sent to ' + email + '.');
-    });
   }
   catch(e)
   {
@@ -198,8 +190,10 @@ app.post('/register', async (req, res, next) =>
 
   // WILL ERROR OUT WE HIT THE TRANSPORTER SEND MAIL ERROR.
   // WILL ATTEMPT TO SET AND SEND HEADERS TWICE 
-  // var ret = {error:errordb};
-  // res.status(200).json(ret);
+  transporter.sendMail(mailOptions, function(err){
+    if (err) { return res.status(500).send({msg: err.message, err:errordb}); }
+    res.status(200).send('A verification email has been sent to ' + email + '.');
+  });
 
 });
 
@@ -209,12 +203,14 @@ app.post('/register', async (req, res, next) =>
 app.post('/confirmation/:token', async(req,res,next) =>
 {
   const tokCheck = client.db();
-  const tokenCheck = await tokCheck.collection('User').findOne({token:req.params.token});
-  if (tokenCheck)
+  const tokenCheck = await tokCheck.collection('User').find({token:req.params.token}).toArray();
+
+  // account verification
+  if (tokenCheck.length > 0 && tokenCheck[0].isVerified == "false")
   {
-    client.db().collection('User').updateOne({"token":req.params.token},{ $set : {"isVerified":"true"} },);
+    client.db().collection('User').updateOne({"token":req.params.token},{ $set : {"isVerified":"true", "token":""} },);
   }
-  // maybe delete token after verification is successful?
+
   res.status(200).send('Account verified.');
 })
 
@@ -318,14 +314,40 @@ app.post('/api/addStock', async(req, res, next) =>
   }
 })
 
+// takes in user email, looks for user in database
+// if found: generates random password, hashes new password, stores it in database and sets recoveryMode to true on users document
+// email the user their temporary password so they can login to change their password.
+app.post('/api/forgot/', async(req, res, next) =>
+{
+  const {username, email} = req.body
+
+  const db = client.db()
+  const results = await db.collection('User').find({email:email}).toArray()
+
+  // email exists, gen token for conf link
+  if (results.length > 0)
+  {
+    const passRand = crypto.randomBytes(8).toString('hex')
+
+    var {salt, passwordHash} = sha512(passRand, results[0].salt);
+    db.collection('User').updateOne({"email":email},{ $set : {"recoveryMode":"true", "password":passwordHash} },)
+
+    var transporter = nodemailer.createTransport({ service: 'Sendgrid', auth: { user: process.env.SENDGRID_USERNAME, pass: process.env.SENDGRID_PASSWORD } });
+    var mailOptions = { from: 'michael.yeah@pm.me', to: email, subject: 'Password Reset', text: 'Hello ' + results[0].username + ',\n\n' + 'Use this temporary password to login and reset your password: ' + passRand + '\n' };
+ 
+    transporter.sendMail(mailOptions, function(err){
+      if (err) { return res.status(500).send({msg: err.message}); }
+      res.status(200).send('A password reset email has been sent to ' + email + '.');
+    });
+  }
+
+  if (results.length <= 0 )
+    res.status(401).send("A user with that email was not found.");
+
+})
+
 // DELETE STOCK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // USER SETTINGS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-// FORGOT PASSWORD!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// User submits email -> validate they exist in the db -> recovery token
-// -> (BASE_URL + recovTok) send user recovery email -> click link -> set recoveryMode: true 
-// -> user lands on password reset page -> if(recoveryMode) -> new password -> delete token
-
 
 // NOTIFICATION SETTINGS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // SIGN OUT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
