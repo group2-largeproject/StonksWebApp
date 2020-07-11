@@ -78,7 +78,7 @@ export default function Register() {
 
         try
         {    
-            const response = await fetch(BASE_URL + 'register', //change to /api/register server side
+            const response = await fetch(BASE_URL + 'register', //changed from /api/register server side
             {
               method:'POST',
               body:js,

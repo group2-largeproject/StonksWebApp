@@ -4,15 +4,12 @@ import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
 import Link from '@material-ui/core/Link';
 import Grid from '@material-ui/core/Grid';
-import LockClosedIcon from '@material-ui/icons/LockOpen';
+import LockOpenIcon from '@material-ui/icons/LockOpen';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
-import validateEmail from './emailvalidation';
 
 const BASE_URL = 'https://cop4331-large-group2.herokuapp.com/';
 
@@ -39,12 +36,13 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function ForgotPassword() {
+export default function ResetPassword() {
   const classes = useStyles();
 
   const [state , setState] = useState({
-    forgotUsername : "",
-    forgotEmail : ""
+    resetEmail : "",
+    resetPassword : "",
+    resetConfirmPassword : ""
   })
   const handleChange = (e) => {
     const {id , value} = e.target   
@@ -56,47 +54,55 @@ export default function ForgotPassword() {
 
   const [message,setMessage] = useState('');
 
-  const doForgotPass = async event => 
+  const doResetPassword = async event => 
     {
       event.preventDefault();     
-      if( state.forgotEmail == '' || state.forgotUsername == '' ){
+      if( state.resetPassword == '' || state.resetEmail == '' || state.resetConfirmPassword == '' ){
         setMessage('Please fill out all fields!');
       }
-      else if(!validateEmail(state.forgotEmail)){
-        setMessage('Please enter a valid email address!');
+      else if( state.resetPassword.length <= 8 ){
+        setMessage('Password must have a length of 8 or more!');
+      }
+      else if( state.resetPassword != state.resetConfirmPassword ){
+        setMessage('Passwords do not match!');
       }
       else{
         var js = 
-        '{"username":"' + state.forgotUsername + 
-        '","email":"' + state.forgotEmail 
+        '{"email":"' + state.resetEmail + 
+        '","password":"' + state.resetPassword 
         +'"}';
 
         try
         {    
-            const response = await fetch(BASE_URL + 'api/forgot',
+            const response = await fetch(BASE_URL + 'api/reset',
             {
               method:'POST',
               body:js,
               headers:
               {
-                'Content-Type': 'application/json',
-                'Response-Type': 'text/html'
+                'Content-Type': 'application/json'
               }
             }
             );
-            
-            var res = await response.text();
-            var stat = await response.status;
 
-            if(stat == 401){ 
-              setMessage('A user with the email address ' + state.forgotEmail +' was not found!');
+            var res = JSON.parse(await response.text());
+
+            if( res.error !=  '' )
+            {
+                setMessage(res.error);
             }
-            else if(stat == 200){ 
-              setMessage('Password reset email sent to : ' + state.forgotEmail);
+            if( res.recoveryMode ==  'true' )
+            {
+                setMessage('Reroute to recovery');
+                /*window.location.href = '/Recovery'; */
             }
             else
             {
-              setMessage(stat + ' : ' + res);
+                /*var user = {username:res.username,email:res.email,id:res.id,fname:res.firstName,lname:res.lastName}
+                localStorage.setItem('user_data', JSON.stringify(user));*/
+
+                setMessage('Password Change Successful');
+                /*window.location.href = '/Dashboard';*/
             }
         }
         catch(e)
@@ -112,23 +118,36 @@ export default function ForgotPassword() {
       <CssBaseline />
       <div className={classes.paper}>
         <Avatar className={classes.avatar}>
-          <LockClosedIcon/>
+          <LockOpenIcon/>
         </Avatar>
         <Typography component="h1" variant="h5">
-          Account Recovery
+          Sign in
         </Typography>
         <form className={classes.form} noValidate>
-        <TextField
+          <TextField
             variant="outlined"
             margin="normal"
             required
             fullWidth
-            id="forgotUsername"
-            label="Username"
-            name="username"
-            autoComplete="username"
+            id="resetEmail"
+            label="Email"
+            name="email"
+            autoComplete="email"
+            value = {state.resetEmail}
+            onChange={handleChange}
             autoFocus
-            value = {state.forgotUsername}
+          />
+          <TextField
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            name="password"
+            label="Password"
+            type="password"
+            id="resetPassword"
+            autoComplete="current-password"
+            value = {state.resetPassword}
             onChange={handleChange}
           />
           <TextField
@@ -136,27 +155,32 @@ export default function ForgotPassword() {
             margin="normal"
             required
             fullWidth
-            id="forgotEmail"
-            label="Email Address"
-            name="email"
-            autoComplete="email"
-            value = {state.forgotEmail}
+            name="confirmPassword"
+            label="Confirm Password"
+            type="password"
+            id="resetConfirmPassword"
+            value = {state.resetConfirmPassword}
             onChange={handleChange}
           />
           <Grid item xs={12}>
-            <span id="forgotResult">{message}</span>
-          </Grid>
+              <span id="resetResult">{message}</span>
+            </Grid>
           <Button
             type="submit"
             fullWidth
             variant="contained"
-            onClick= {doForgotPass}
+            onClick= {doResetPassword}
             color="primary"
             className={classes.submit}
           >
-            Send Recovery Email
+            Sign In
           </Button>
           <Grid container>
+            <Grid item xs>
+              <Link href="/forgotpassword" variant="body2">
+                Forgot password?
+              </Link>
+            </Grid>
             <Grid item>
               <Link href="/register" variant="body2">
                 {"Don't have an account? Sign Up"}

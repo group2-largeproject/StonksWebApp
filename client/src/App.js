@@ -10,6 +10,7 @@ import ForgotPage           from './pages/forgotPage';
 import ProfilePage          from './pages/profilePage';
 import AddStockPage         from './pages/addstockPage';
 import AccountSettingsPage  from './pages/accountsettingsPage';
+import PasswordResetPage    from './pages/passwordresetPage';
 import Footer               from './components/footer';
 
 //Auth
@@ -45,11 +46,12 @@ function App() {
             <Route path="/" exact component={ LoginPage }/>
             <Route path="/Login" exact component={ LoginPage }/>
             <Route path="/Register" exact component={ RegisterPage }/>     
-            <PrivateRoute path="/Dashboard" exact component={ Dashboard }/>
             <Route path="/ForgotPassword" exact component={ ForgotPage }/>
+            <PrivateRoute path="/Dashboard" exact component={ Dashboard }/>
             <PrivateRoute path="/Profile" exact component={ ProfilePage }/>
             <PrivateRoute path="/AddStock" exact component={ AddStockPage }/> 
-            <PrivateRoute path="/AccountSettings" exact component={ AccountSettingsPage }/>                  
+            <PrivateRoute path="/AccountSettings" exact component={ AccountSettingsPage }/>
+            <PrivateRoute path="/ResetPassword" exact component={ PasswordResetPage }/>                  
             <Redirect to="/" />      
           </Switch>   
         </Router>
