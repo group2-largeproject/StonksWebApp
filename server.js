@@ -150,7 +150,7 @@ app.post('/api/login', async (req, res, next) =>
   else
     error = 'Invalid username/password';
     
-  var ret = {username:uname,email:email,id:id,error:error,jwt:token,recovery:recovery};
+  var ret = {username:uname,email:email,firstName:fn,lastName:ln,id:id,error:error,jwt:token,recovery:recovery};
   res.status(200).json(ret); 
   // set session cookie for logout / activity
   // var ret = {userId:id, firstName:fn, lastName:ln, error:error};
@@ -346,6 +346,8 @@ async function fetchStock(stock)
 // -> check stock API to verify stock exists -> add stock to user.stock array -> EOD(separate api): ping stock API with stock array
 app.post('/api/addStock', async(req, res, next) => 
 {
+  // validate jwt through api
+  // 
   var error = '';
   const {username, stock} = req.body;
   // var d = new Date();
@@ -424,7 +426,7 @@ app.post('/api/forgot/', async(req, res, next) =>
   }
 
   if (results.length <= 0 )
-    res.status(401).send("A user with that email was not found.");
+    res.status(200).send("A user with that email was not found.");
 
 })
 
