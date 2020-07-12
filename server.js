@@ -12,6 +12,8 @@ const crypto = require('crypto')
 const nodemailer = require('nodemailer')
 const { restart } = require('nodemon')
 const jwt = require('jsonwebtoken')
+const { isNull } = require('util')
+const { json } = require('body-parser')
 // const session = require('express-session')
 // const cookieParser = require('cookie-parser')
 
@@ -85,7 +87,6 @@ function saltHashPassword(userpassword) {
 // make the token and it bounces back and forth between front end and api
 // every time the user does an action we extend the time left on that token
 // when they switch pages, talk to api, anything will extend the token.
-// DO NOT save the token to the database
 app.post('/api/login', async (req, res, next) =>
 {
   var error = '';
@@ -118,9 +119,21 @@ app.post('/api/login', async (req, res, next) =>
       email = results[0].email;
       recovery = results[0].recoveryMode;
 
-      var privateKey = "poopsock"
-      var token = jwt.sign({id:results[0]._id}, privateKey);
-      console.log(token);
+      var token = jwt.sign({id:results[0]._id}, process.env.SECRET, { expiresIn: '30m' });
+      // log time here
+      // update token time here
+      // log time of token
+      // if token expired, err.message = 'jwt expired'. so set err = err.message
+      jwt.verify(token, process.env.SECRET, function(err, decoded)
+      {
+        // if there is no error validating the token
+        if (!isNull(err))
+        {
+          error = err.message;
+        }
+        // prints out expiration time in seconds since unix epoch
+        console.log(decoded.exp);
+      })
      }
     
     // username valid, password valid, account is not verified
@@ -143,14 +156,64 @@ app.post('/api/login', async (req, res, next) =>
   // var ret = {userId:id, firstName:fn, lastName:ln, error:error};
 });
 
-// token validation => reset token expiration
-app.post('/api/validation/', async(req, rest, next) =>
+// token validation => new token with expiration set to 30m
+app.post('/api/validation/', async(req, res, next) =>
 {
   const {token} = req.body;
+  var uId = '';
+  var error = '';
+  var newToken = '';
 
+  jwt.verify(token, process.env.SECRET, function(err, decoded)
+  {
+    // if error, save error to send back to front end.
+    if (!isNull(err))
+    {
+      error = err.message;
+    }
+    else if (isNull(err))
+    {
+      uId = decoded.id;
+      newToken = jwt.sign({id:uId}, process.env.SECRET, { expiresIn: '30m' });
+    }
+  })
+
+  var ret = {jwt:newToken,error:error};
+  res.status(200).json(ret);
   // check the time remaining on the token to verify
   // if expired, ping back that this token is expired/useless
   // if time is left, we go ahead and reset the time left
+})
+
+// if a valid token is passed, makes a new token that expires in 1second
+app.post('/api/logout', async(req, res, next) =>
+{
+  const {token} = req.body;
+  var uId = '';
+  var error = '';
+  var newToken = '';
+
+  jwt.verify(token, process.env.SECRET, function(err, decoded)
+  {
+    // if error, save error to send back to front end.
+    if (!isNull(err))
+    {
+      if (err.message === "jwt expired")
+      {
+        error = "You are already logged out."
+      }
+      else
+        error = err.message;
+    }
+    else if (isNull(err))
+    {
+      uId = decoded.id;
+      newToken = jwt.sign({id:uId}, process.env.SECRET, { expiresIn: '1s' });
+    }
+  })
+
+  var ret = {jwt:newToken,error:error};
+  res.status(200).json(ret);
 })
 
 const registerSchema = Joi.object({
