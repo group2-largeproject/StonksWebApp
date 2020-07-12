@@ -11,8 +11,9 @@ const fetch = require('node-fetch')
 const crypto = require('crypto')
 const nodemailer = require('nodemailer')
 const { restart } = require('nodemon')
-const session = require('express-session')
-const cookieParser = require('cookie-parser')
+const jwt = require('jsonwebtoken')
+// const session = require('express-session')
+// const cookieParser = require('cookie-parser')
 
 const iex = new IEXCloudClient(fetch, {
   sandbox: true,
@@ -22,7 +23,6 @@ const iex = new IEXCloudClient(fetch, {
 
 app.use(cors())
 app.use(bodyParser.json())
-// app.use(session({secret: process.env.SECRET}))
 require('dotenv').config();
 
 // const router = require('./routes/index');
@@ -82,6 +82,10 @@ function saltHashPassword(userpassword) {
   };
 }
 
+// make the token and it bounces back and forth between front end and api
+// every time the user does an action we extend the time left on that token
+// when they switch pages, talk to api, anything will extend the token.
+// DO NOT save the token to the database
 app.post('/api/login', async (req, res, next) =>
 {
   var error = '';
@@ -90,6 +94,8 @@ app.post('/api/login', async (req, res, next) =>
   var ln = '';
   var uname = '';
   var email = '';
+  var token = '';
+  var recovery = '';
 
   const {username, password} = req.body;
   const db = client.db();
@@ -110,7 +116,12 @@ app.post('/api/login', async (req, res, next) =>
       ln = results[0].lastName;
       uname = results[0].username;
       email = results[0].email;
-    }
+      recovery = results[0].recoveryMode;
+
+      var privateKey = "poopsock"
+      var token = jwt.sign({id:results[0]._id}, privateKey);
+      console.log(token);
+     }
     
     // username valid, password valid, account is not verified
     else if (results.length > 0 && results[0].isVerified == "false")
@@ -126,11 +137,21 @@ app.post('/api/login', async (req, res, next) =>
   else
     error = 'Invalid username/password';
     
-  var ret = {username:uname,email:email,id:id,error:error};
+  var ret = {username:uname,email:email,id:id,error:error,jwt:token,recovery:recovery};
   res.status(200).json(ret); 
   // set session cookie for logout / activity
   // var ret = {userId:id, firstName:fn, lastName:ln, error:error};
 });
+
+// token validation => reset token expiration
+app.post('/api/validation/', async(req, rest, next) =>
+{
+  const {token} = req.body;
+
+  // check the time remaining on the token to verify
+  // if expired, ping back that this token is expired/useless
+  // if time is left, we go ahead and reset the time left
+})
 
 const registerSchema = Joi.object({
   username: Joi.string().required(),
@@ -214,12 +235,6 @@ app.post('/confirmation/:token', async(req,res,next) =>
   res.status(200).send('Account verified.');
 })
 
-// fetches & returns the stock symbols current price
-async function fetchStock(stock)
-{
-  return iex.symbol(stock.toString()).price();
-}
-
 // adds zeros to the time/date if it is any digit less than 10
 // e.g if minutes = 7 this function will turn minutes into "07".
 function addZero(i)
@@ -256,61 +271,43 @@ function getTime(d)
   return newTime;
 }
 
+// fetches & returns the stock symbols current price
+async function fetchStock(stock)
+{
+  return iex.symbol(stock.toString()).price();
+}
+
 // https://www.npmjs.com/package/node-iex-cloud
 // WORK ON THE RETURN JSON DATA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// User sends stock to add -> find user -> check stocks array, verify stock doesn't exist in array 
+// -> check stock API to verify stock exists -> add stock to user.stock array -> EOD(separate api): ping stock API with stock array
 app.post('/api/addStock', async(req, res, next) => 
 {
   var error = '';
-  const {stock} = req.body;
-  var d = new Date();
-  let newDate = getDate(d);
-  let newTime = getTime(d);
+  const {username, stock} = req.body;
+  // var d = new Date();
+  // let newDate = getDate(d);
+  // let newTime = getTime(d);
 
-  // if stock user wants to add has been added by someone else, use that data instead
-  // if stock has been added but has not been updated for 2 or more hours, refresh stock
-  // maybe we can add user id's to the stocks they want to track? rather than adding
-  // a shit ton of the same stock per user id (lol)
   const db = client.db();
-  const results = await db.collection('Stocks').find({symbol:stock}).toArray();
+  const results = await db.collection('User').find({username:username}).toArray();
+  // const results = await db.collection('Stocks').find({symbol:"tsla"}).toArray();
 
   if (results.length > 0)
   {
-    // check if time since last refresh >= 2hrs
-    // access results[0].timeUpdate = 14:30:20
-
-    let test = results[0].timeUpdate;
-
-    // would print out 14, following example above
-    console.log("Time in hours: " + test[0] + test[1]);
-      
-    let price = results[0].currentPrice;
-
-    // const oldStock = {symbol:stock,currentPrice:price,dateUpdated:newDate,timeUpdated:newTime};
-    const updateTime = {dateUpdated:newDate,timeUpdated:newTime};
-    const result = db.collection('Stocks').updateOne({"symbol":stock},{ $set : {"dateUpdate":newDate, "timeUpdate":newTime} },);
-
-    var ret = {error:error}
-    res.status(200).json(ret);
-  }
-  else if(results.length == 0)
-  {
-    let price = await fetchStock(stock);
-    const newStock = {symbol:stock,currentPrice:price,dateUpdated:newDate,timeUpdated:newTime};
-
-    try
+    var array = results[0].stockArray;
+    var found = array.includes(stock)
+    if (found)
     {
-      const db = client.db();
-      const result = db.collection('Stocks').insertOne(newStock);
+      var error = "Stock already exists on user profile."
     }
-    catch(e)
+    else if (!found)
     {
-      error = e.toString();
+      let price = await fetchStock(stock);
+      console.log("Price is: " + price);
     }
-
-    // console.log("NEW STONK: " + price);
-    // console.log(newStock);
     var ret = {error:error}
-    res.status(200).json(ret);
+    res.status(200).send(ret);
   }
 })
 
@@ -333,7 +330,7 @@ app.post('/api/forgot/', async(req, res, next) =>
     db.collection('User').updateOne({"email":email},{ $set : {"recoveryMode":"true", "password":passwordHash} },)
 
     var transporter = nodemailer.createTransport({ service: 'Sendgrid', auth: { user: process.env.SENDGRID_USERNAME, pass: process.env.SENDGRID_PASSWORD } });
-    var mailOptions = { from: 'michael.yeah@pm.me', to: email, subject: 'Password Reset', text: 'Hello ' + results[0].username + ',\n\n' + 'Use this temporary password to login and reset your password: ' + passRand + '\n' };
+    var mailOptions = { from: 'michael.yeah@pm.me', to: email, subject: 'Password Reset', text: 'Hello ' + results[0].username + ',\n\n' + 'Use this temporary password to login, make sure to change your password via Account Settings once logged in: ' + passRand + '\n' };
  
     transporter.sendMail(mailOptions, function(err){
       if (err) { return res.status(500).send({msg: err.message}); }
