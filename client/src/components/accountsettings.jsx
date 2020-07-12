@@ -36,6 +36,9 @@ const useStyles = makeStyles((theme) => ({
   submit: {
     margin: theme.spacing(3, 0, 2),
   },
+  formGroup: {
+    alignItems: 'center',
+  },
 }));
 
 /*FINISH FUNCTIONALITY:
@@ -55,12 +58,19 @@ export default function AccountSettings(){
     var profileFN = ud.fname;
     var profileLN = ud.lname;
   }
+  /*const [switchState, setSwitchState] = useState({
+    emailNot: true,
+    mobileNot: true,
+  });*/
   const [state , setState] = useState({
     newUsername : profileUsername,
     newEmail : profileEmail,
     newFN : profileFN,
     newLN : profileLN
   })
+  /*const handleSwitch = (e) => {
+    setSwitchState({ ...switchState, [e.target.name]: e.target.checked });
+  };*/
   const handleChange = (e) => {
     const {id , value} = e.target   
     setState(prevState => ({
@@ -192,6 +202,17 @@ export default function AccountSettings(){
               onChange={handleChange}
                />
                <br/>
+               {/*<Typography component="h1" variant="body">Notifications:</Typography>
+               <FormGroup className={classes.formGroup} row>
+                <FormControlLabel
+                  control={<Switch checked={state.emailNot} onChange={handleSwitch} name="checkedB" color="primary"/>}
+                  label="Email"
+                />
+                <FormControlLabel
+                  control={<Switch checked={state.mobileNot} onChange={handleSwitch} name="checkedB" color="primary"/>}
+                  label="Mobile"
+                />
+              </FormGroup>*/}
                </Paper>
              </Grid>
              <Grid item lg={12}>
@@ -205,11 +226,6 @@ export default function AccountSettings(){
                 >
                   Update Account
                 </Button>
-             </Grid>
-             <Grid item lg={12}>
-               <Button color="primary" href="/AccountSettings">
-                 Edit
-               </Button>
              </Grid>
            </Grid>
          </div>

@@ -1,29 +1,31 @@
 import React from 'react';
 import Link from '@material-ui/core/Link';
+import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import Title from './title';
+import Grid from '@material-ui/core/Grid';
+
 
 // Generate Order Data
-function createData(id, quantity, symbol, dailyquote, dailychange, dateupdated, profitsinceadded) {
-  return { id, quantity, symbol, dailyquote, dailychange, dateupdated, profitsinceadded };
+function createData(id, symbol, dailyquote, dailychange, dateupdated, profitsinceadded) {
+  return { id, symbol, dailyquote, dailychange, dateupdated, profitsinceadded };
 }
 
 const rows = [
-  createData(1, 300,'ABC', 10, -5, '01/20/2020', 312.44),
-  createData(2, 300,'ABC', 10, -5, '01/20/2020', 312.44),
-  createData(3, 300,'ABC', 10, -5, '01/20/2020', 312.44),
-  createData(4, 300,'ABC', 10, -5, '01/20/2020', 312.44),
-  createData(5, 300,'ABC', 10, -5, '01/20/2020', 312.44),
-  createData(6, 300,'ABC', 10, -5, '01/20/2020', 312.44),
-  createData(7, 300,'ABC', 10, -5, '01/20/2020', 312.44),
-  createData(8, 300,'ABC', 10, -5, '01/20/2020', 312.44),
-  createData(9, 300,'ABC', 10, -5, '01/20/2020', 312.44),
-  createData(10, 300,'ABC', 10, -5, '01/20/2020', 312.44),
+  createData(1,'ABC', 10, -5, '01/20/2020', 312.44),
+  createData(3,'ABC', 10, -5, '01/20/2020', 312.44),
+  createData(2,'ABC', 10, -5, '01/20/2020', 312.44),
+  createData(4,'ABC', 10, -5, '01/20/2020', 312.44),
+  createData(5,'ABC', 10, -5, '01/20/2020', 312.44),
+  createData(6,'ABC', 10, -5, '01/20/2020', 312.44),
+  createData(7,'ABC', 10, -5, '01/20/2020', 312.44),
+  createData(8,'ABC', 10, -5, '01/20/2020', 312.44),
+  createData(9,'ABC', 10, -5, '01/20/2020', 312.44),
+  createData(10,'ABC', 10, -5, '01/20/2020', 312.44),
 ];
 
 function preventDefault(event) {
@@ -34,18 +36,35 @@ const useStyles = makeStyles((theme) => ({
   seeMore: {
     marginTop: theme.spacing(3),
   },
+  title: {
+    float: 'right',
+  }
 }));
 
 export default function StockTable() {
   const classes = useStyles();
+  const date = new Date();
   return (
     <React.Fragment>
-      <Title>Performance</Title>
+      <Grid container justify="center" display="flex" direction="row" alignItems="flex-start" spacing={3}>
+      <Grid item lg={3}>
+      <Typography display="inline" align="left" component="h2" variant="h6" color="primary" gutterBottom>Performance</Typography>
+      </Grid>
+      <Grid item lg={3}>
+      {/*spacer*/}
+      </Grid>
+      <Grid item lg={3}>
+      {/*spacer*/}
+      </Grid>
+      <Grid justify="flex-end" item lg={3}>
+      <Typography display="inline" align="right" component="h2" variant="h6">{date.getMonth()}/{date.getDate()}/{date.getFullYear()}</Typography>
+      </Grid>
+      <br/>
+      </Grid>
       <Table size="small">
         <TableHead>
           <TableRow>
             <TableCell>Row</TableCell>
-            <TableCell>Quantity</TableCell>
             <TableCell>Symbol</TableCell>
             <TableCell>Daily Quote</TableCell>
             <TableCell>Daily Change</TableCell>
@@ -57,7 +76,6 @@ export default function StockTable() {
           {rows.map((row) => (
             <TableRow key={row.id}>
               <TableCell>{row.id}</TableCell>
-              <TableCell>{row.quantity}</TableCell>
               <TableCell>{row.symbol}</TableCell>
               <TableCell>{row.dailyquote}</TableCell>
               <TableCell>{row.dailychange}</TableCell>

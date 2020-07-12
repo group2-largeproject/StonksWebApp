@@ -3,14 +3,10 @@ import {NavLink} from 'react-router-dom';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import ListSubheader from '@material-ui/core/ListSubheader';
 import DashboardIcon from '@material-ui/icons/Dashboard';
 import AccountBoxIcon from '@material-ui/icons/AccountBox';
-//import ListIcon from '@material-ui/icons/List';
 import AddBoxIcon from '@material-ui/icons/AddBox';
-import ExitToApp from '@material-ui/icons/ExitToApp';
 import SettingsApplicationsIcon from '@material-ui/icons/SettingsApplications';
-import NotificationsActiveIcon from '@material-ui/icons/NotificationsActive';
 import SignOut from '../components/signoutbutton';
 
 export const mainListItems = (
@@ -63,7 +59,6 @@ export const mainListItems = (
 
 export const secondaryListItems = (
   <div>
-    <ListSubheader>Account</ListSubheader>
     <NavLink
     exact
     to = "/AccountSettings"
@@ -77,7 +72,7 @@ export const secondaryListItems = (
       <ListItemText primary="Account Settings" />
     </ListItem>
     </NavLink>
-    <NavLink
+    {/*<NavLink
     exact
     to = "/NotificationSettings"
     className = "nav-link"
@@ -89,7 +84,7 @@ export const secondaryListItems = (
       </ListItemIcon>
       <ListItemText primary="Notification Settings" />
     </ListItem>
-    </NavLink>
+    </NavLink>*/}
     <SignOut/>
     {/*<NavLink
     exact

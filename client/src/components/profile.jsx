@@ -1,11 +1,9 @@
 import React from 'react';
 import CreateFakeUser from './fakeuser';
 import Button from '@material-ui/core/Button';
-import CssBaseline from '@material-ui/core/CssBaseline';
 import Avatar from '@material-ui/core/Avatar';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
-import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import PersonIcon from '@material-ui/icons/Person';
 import { Paper } from '@material-ui/core';
@@ -79,7 +77,7 @@ function DeleteFakeUser(){
              </Grid>
              <Grid item lg={12}>
                <Button color="primary" href="/AccountSettings">
-                 Edit
+                 Account Settings
                </Button>
                <Button size="small" onClick = {CreateFakeUser}>CreateFakeUser</Button>
               <Button size="small" onClick = {DeleteFakeUser}>DeleteFakeUser</Button>

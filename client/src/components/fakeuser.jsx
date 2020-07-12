@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function CreateFakeUser(){
     var fakeUser = "fakeuser123";
     var fakeEmail = "fake@email.com";

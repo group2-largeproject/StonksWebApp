@@ -8,15 +8,14 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
-import Badge from '@material-ui/core/Badge';
 import Container from '@material-ui/core/Container';
 import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import NotificationsIcon from '@material-ui/icons/Notifications';
 import { mainListItems, secondaryListItems } from '../components/listItems';
 import { MenuList } from '@material-ui/core';
 import Profile from '../components/profile';
 import logo from '../media/StonksMainLogo.png';
+import ListSubheader from '@material-ui/core/ListSubheader';
 
 const drawerWidth = 240;
 
@@ -108,11 +107,14 @@ const useStyles = makeStyles((theme) => ({
 export default function ProfilePage() {
   const classes = useStyles();
   const [open, setOpen] = React.useState(true);
+  const [showAccount, setShowAccount] = React.useState(true)
   const handleDrawerOpen = () => {
     setOpen(true);
+    setShowAccount(true);
   };
   const handleDrawerClose = () => {
     setOpen(false);
+    setShowAccount(false);
   };
   //const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
 
@@ -140,7 +142,7 @@ export default function ProfilePage() {
           {/*<IconButton color="inherit">
             <Badge 
             color = "error"
-            badgeContent = {5}
+            badgeContent = {notificationAmount}
             >
               <NotificationsIcon />
             </Badge>
@@ -162,6 +164,7 @@ export default function ProfilePage() {
         <Divider />
         <MenuList>{mainListItems}</MenuList>
         <Divider />
+        { showAccount ? <ListSubheader>Account</ListSubheader> : null }
         <MenuList>{secondaryListItems}</MenuList>
       </Drawer>
       <main className={classes.content}>

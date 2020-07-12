@@ -84,15 +84,21 @@ export default function Login() {
             {
                 setMessage(res.error);
             }
-            if( res.recoveryMode ==  'true' )
+            else if( res.jwt == '' )
+            {
+                setMessage('Token Error')
+            }
+            else if( res.recovery ==  'true' )
             {
                 setMessage('Reroute to recovery');
                 /*window.location.href = '/Recovery'; */
             }
             else
             {
-                /*var user = {username:res.username,email:res.email,id:res.id,fname:res.firstName,lname:res.lastName}
-                localStorage.setItem('user_data', JSON.stringify(user));*/
+                var user = {username:res.username,email:res.email,id:res.id,fname:res.firstName,lname:res.lastName}
+                var session = {token:res.jwt}
+                localStorage.setItem('user_data', JSON.stringify(user));
+                localStorage.setItem('session_token', JSON.stringify(session));
 
                 setMessage('Login Successful');
                 /*window.location.href = '/Dashboard';*/

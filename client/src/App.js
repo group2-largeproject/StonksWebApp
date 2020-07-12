@@ -14,8 +14,6 @@ import PasswordResetPage    from './pages/passwordresetPage';
 import Footer               from './components/footer';
 
 //Auth
-import PrivateRoute     from '../src/PrivateRoute';
-import { AuthContext }  from './context/auth';
 
 //Themeing
 import { createMuiTheme } from "@material-ui/core/styles";
@@ -40,25 +38,23 @@ function App() {
   return (    
   <div id="main">
     <ThemeProvider theme={theme}>
-      <AuthContext.Provider value={ true }>
-        <Router >      
-          <Switch>        
-            <Route path="/" exact component={ LoginPage }/>
-            <Route path="/Login" exact component={ LoginPage }/>
-            <Route path="/Register" exact component={ RegisterPage }/>     
-            <Route path="/ForgotPassword" exact component={ ForgotPage }/>
-            <PrivateRoute path="/Dashboard" exact component={ Dashboard }/>
-            <PrivateRoute path="/Profile" exact component={ ProfilePage }/>
-            <PrivateRoute path="/AddStock" exact component={ AddStockPage }/> 
-            <PrivateRoute path="/AccountSettings" exact component={ AccountSettingsPage }/>
-            <PrivateRoute path="/ResetPassword" exact component={ PasswordResetPage }/>                  
-            <Redirect to="/" />      
-          </Switch>   
-        </Router>
-        <div id="footer">
-          <Footer />
-        </div>
-      </AuthContext.Provider>
+      <Router >      
+        <Switch>        
+          <Route path="/" exact component={ LoginPage }/>
+          <Route path="/Login" exact component={ LoginPage }/>
+          <Route path="/Register" exact component={ RegisterPage }/>     
+          <Route path="/ForgotPassword" exact component={ ForgotPage }/>
+          <Route path="/Dashboard" exact component={ Dashboard }/>
+          <Route path="/Profile" exact component={ ProfilePage }/>
+          <Route path="/AddStock" exact component={ AddStockPage }/> 
+          <Route path="/AccountSettings" exact component={ AccountSettingsPage }/>
+          <Route path="/ResetPassword" exact component={ PasswordResetPage }/>                  
+          <Redirect to="/" />      
+        </Switch>   
+      </Router>
+      <div id="footer">
+        <Footer />
+      </div>
     </ThemeProvider>
   </div>
   );

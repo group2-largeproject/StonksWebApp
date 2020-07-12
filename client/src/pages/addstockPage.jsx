@@ -5,25 +5,20 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import Drawer from '@material-ui/core/Drawer';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
-import List from '@material-ui/core/List';
-import Menu from '@material-ui/core/Menu';
 import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
-import Badge from '@material-ui/core/Badge';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import NotificationsIcon from '@material-ui/icons/Notifications';
-//import { mainListItems} from '../components/listItems';
 import { mainListItems, secondaryListItems } from '../components/listItems';
-//import { mainMenuItems, secondaryMenuItems } from '../components/menuItems'; 
-//import ReactiveList from '../components/reactivelist';
 import { MenuList } from '@material-ui/core';
 import AddStock from '../components/addstock';
+import StockTable from '../components/stocktable';
 import logo from '../media/StonksMainLogo.png';
+import ListSubheader from '@material-ui/core/ListSubheader';
 
 const drawerWidth = 240;
 
@@ -115,13 +110,16 @@ const useStyles = makeStyles((theme) => ({
 export default function ProfilePage() {
   const classes = useStyles();
   const [open, setOpen] = React.useState(true);
+  const [showAccount, setShowAccount] = React.useState(true)
   const handleDrawerOpen = () => {
     setOpen(true);
+    setShowAccount(true);
   };
   const handleDrawerClose = () => {
     setOpen(false);
+    setShowAccount(false);
   };
-  const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
+  //const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
 
   return (
     <div className={classes.root}>
@@ -147,7 +145,7 @@ export default function ProfilePage() {
           {/*<IconButton color="inherit">
             <Badge 
             color = "error"
-            badgeContent = {5}
+            badgeContent = {notificationAmount}
             >
               <NotificationsIcon />
             </Badge>
@@ -169,12 +167,29 @@ export default function ProfilePage() {
         <Divider />
         <MenuList>{mainListItems}</MenuList>
         <Divider />
+        { showAccount ? <ListSubheader>Account</ListSubheader> : null }
         <MenuList>{secondaryListItems}</MenuList>
       </Drawer>
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
-        <Container maxWidth="lg" className={classes.container}>
+        {/*<Container maxWidth="lg" className={classes.container}>
           <AddStock />
+        </Container>*/}
+        <Container maxWidth="lg" className={classes.container}>
+          <Grid container spacing={3}>
+            {/* Chart */}
+            <Grid item xs={12} md={8} lg={9}>
+            <Paper className={classes.paper}>
+                <StockTable />
+              </Paper>
+            </Grid>
+            {/* Add Stock Box */}
+            <Grid item xs={12} md={4} lg={3}>
+              <Paper className={classes.paper}>
+                <AddStock />
+              </Paper>
+            </Grid>
+          </Grid>
         </Container>
       </main>
     </div>
