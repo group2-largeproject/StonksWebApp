@@ -299,18 +299,38 @@ app.post('/api/addStock', async(req, res, next) =>
     var found = array.includes(stock)
     if (found)
     {
-      var error = "Stock already exists on user profile."
+      error = "Stock already exists on user profile."
     }
     else if (!found)
     {
       let price = await fetchStock(stock);
-      console.log("Price is: " + price);
-      const  newStonk = {symbol:stock,currentPrice:price};
-      await db.collection('Stocks').insertOne(newStonk);
+
+      // stock was found      
+      if(price.message !== "Unknown symbol")
+      {
+        await client.db().collection('User').updateOne({"username":username},{ $push : {"stockArray":stock} },);
+        console.log("yay!")
+      }
+      // stock not found
+      else if (price.message === "Unknown symbol")
+      {
+        error = "Unknown symbol, please enter valid stock symbol."
+        console.log("Stock not found!")
+      }
+      else
+      {
+        error = price.message
+        // console.log(price.message)
+      }
     }
-    var ret = {error:error}
-    res.status(200).send(ret);
   }
+  else
+  {
+    error = "User does not exist"
+  }
+
+  var ret = {error:error}
+  res.status(200).send(ret);
 })
 
 // takes in user email, looks for user in database
