@@ -305,6 +305,8 @@ app.post('/api/addStock', async(req, res, next) =>
     {
       let price = await fetchStock(stock);
       console.log("Price is: " + price);
+      const  newStonk = {symbol:stock,currentPrice:price};
+      await db.collection('Stocks').insertOne(newStonk);
     }
     var ret = {error:error}
     res.status(200).send(ret);
