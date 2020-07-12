@@ -190,7 +190,7 @@ app.post('/register', async (req, res, next) =>
   // after validation, we pull the ol' 1-2 switcheroo and swap the og password with the hashed password.
   var newUser = {dateCreated:newDate, username:username, password:password, salt:salt, email:email, firstName:firstName, lastName:lastName, isVerified:verified, token:token};
   const {error} = Joi.validate(newUser, registerSchema);
-  var newUser = {dateCreated:newDate, username:username, password:passwordHash, salt:salt, email:email, firstName:firstName, lastName:lastName, isVerified:verified, token:token, recoveryMode:"false"};
+  var newUser = {dateCreated:newDate, username:username, password:passwordHash, salt:salt, email:email, firstName:firstName, lastName:lastName, isVerified:verified, token:token, recoveryMode:"false", stockArray:[]};
 
   // joi error check
   if(error) return res.status(400).send(error.details[0].message);
