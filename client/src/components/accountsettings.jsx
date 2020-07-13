@@ -111,7 +111,7 @@ export default function AccountSettings(){
 
         try
         {    
-            const response = await fetch(BASE_URL + 'api/REPLACEWITHPATH',
+            const response = await fetch(BASE_URL + 'api/updateAccount',
             {
               method:'POST',
               body:js,
