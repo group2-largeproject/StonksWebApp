@@ -87,11 +87,13 @@ function saltHashPassword(userpassword) {
 
 
 app.post('/api/test', async(req,res,next) =>{
+  const {username} = req.body;
   cron.schedule("0 * 20 * * 1-7", async function() {
     db =  client.db();
     await client.db().collection('User').updateOne({"username":"Malaniz"},{ $push : {"stockArray":"amd"} },);
     console.log("Hello")
   });
+  res.status(200).json({msg:"poop"});
 })
 
 
