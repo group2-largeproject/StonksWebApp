@@ -460,6 +460,27 @@ app.post('/api/updateAccount', async(req, res, next) =>
   // if results.length > 0 update all other data
   // send error saying username already exists
   // else update everything & return blank error
+  var error = ''
+  const {username, email, firstName, lastName, id} = req.body
+  
+  db = client.db()
+  results = db.collection('User').find({_id:id}).toArray()
+
+
+  // if we want to change usernames we have to pass along the original username + new username.
+  // if they are the same, we don't check to see if a user already holds the new username.
+  // usernameRes = db.collection('User').find({username:username}).toArray()
+  // if (usernameRes.length > 0)
+  //   error = 'User with that username already exists'
+
+  if (results.length > 0)
+    db.collection('User').updateOne({firstName:firstName,lastName:lastName})
+  else
+    error = "User with that id was not found."
+
+  ret = {error:error}
+  res.status(200).json(ret)
+
 })
 
 // DELETE STOCK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
