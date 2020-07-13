@@ -448,11 +448,23 @@ app.post('/api/forgot', async(req, res, next) =>
 app.post('/api/reset', async (req, res, next) => 
 {
   // reset password via email and password field
+  var error = ''
+  const {email, password} = req.body
+
+  let db = client.db()
+  const results = await db.collection('User').find({email:email}).toArray()
+
+  if (results.length > 0)
+    await client.db().collection('User').updateOne({email:email},{$set : {password:password} })
+  else
+    error = "User with that email address was not found."
+
+  let ret = {error:error}
+  res.status(200).json(ret)
 })
 
 // takes in username, email, firstName, lastName, id (id will be removed)
 // don't allow them to change their email. validate that new username doesn't exist before changing
-
 app.post('/api/updateAccount', async(req, res, next) => 
 {
   // lookup new username in db.toArray
@@ -463,8 +475,8 @@ app.post('/api/updateAccount', async(req, res, next) =>
   var error = ''
   const {username, email, firstName, lastName, id} = req.body
   
-  db = client.db()
-  results = db.collection('User').find({email:email}).toArray()
+  let db = client.db()
+  let results = await db.collection('User').find({email:email}).toArray()
 
 
   // if we want to change usernames we have to pass along the original username + new username.
@@ -474,7 +486,7 @@ app.post('/api/updateAccount', async(req, res, next) =>
   //   error = 'User with that username already exists'
 
   if (results.length > 0)
-    db.collection('User').updateOne({firstName:firstName,lastName:lastName})
+    await db.collection('User').updateOne({email:email},{$set : {firstName:firstName,lastName:lastName} },);
   else
     error = "User with that id was not found."
 
