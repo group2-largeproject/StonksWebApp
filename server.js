@@ -464,7 +464,7 @@ app.post('/api/updateAccount', async(req, res, next) =>
   const {username, email, firstName, lastName, id} = req.body
   
   db = client.db()
-  results = db.collection('User').find({_id:id}).toArray()
+  results = db.collection('User').find({email:email}).toArray()
 
 
   // if we want to change usernames we have to pass along the original username + new username.
