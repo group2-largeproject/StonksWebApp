@@ -14,7 +14,6 @@ const { restart } = require('nodemon')
 const jwt = require('jsonwebtoken')
 const { isNull } = require('util')
 const { json } = require('body-parser')
-const cron = require("node-cron");
 // const session = require('express-session')
 // const cookieParser = require('cookie-parser')
 
@@ -298,13 +297,15 @@ app.post('/register', async (req, res, next) =>
 // ERASE TOKEN AFTER CONFIRMATION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 app.post('/confirmation/:token', async(req,res,next) =>
 {
-  const tokCheck = client.db();
-  const tokenCheck = await tokCheck.collection('User').find({token:req.params.token}).toArray();
+  let db = client.db();
+  const tokenCheck = await db.collection('User').find({token:req.params.token}).toArray();
 
   // account verification
   if (tokenCheck.length > 0 && tokenCheck[0].isVerified == "false")
   {
-    client.db().collection('User').updateOne({"token":req.params.token},{ $set : {"isVerified":"true", "token":""} },);
+    let db = client.db()
+    db.collection('User').updateOne({"token":req.params.token},{ $set : {"isVerified":"true", "token":""} },);
+    db.collection('User').updateOne({"username":"master"}, {$push: {"usersArray": {$each: [tokenCheck[0].email]}}});
   }
 
   res.status(200).send('Account verified.');
