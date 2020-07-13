@@ -14,6 +14,7 @@ const { restart } = require('nodemon')
 const jwt = require('jsonwebtoken')
 const { isNull } = require('util')
 const { json } = require('body-parser')
+const cron = require("node-cron");
 // const session = require('express-session')
 // const cookieParser = require('cookie-parser')
 
@@ -21,45 +22,45 @@ const iex = new IEXCloudClient(fetch, {
   sandbox: true,
   publishable: process.env.STONK_TOK,
   version: "stable"
-});
+})
 
 app.use(cors())
 app.use(bodyParser.json())
-require('dotenv').config();
+require('dotenv').config()
 
 // const router = require('./routes/index');
 
-const PORT = process.env.PORT || 5000; 
-const MongoClient = require('mongodb').MongoClient;
-const uri = process.env.MONGO_URL;
-const client = new MongoClient(uri);
+const PORT = process.env.PORT || 5000
+const MongoClient = require('mongodb').MongoClient
+const uri = process.env.MONGO_URL
+const client = new MongoClient(uri)
 
-app.set('port', 5000);
-app.use(express.static(path.join(__dirname, '/client/build')));
-app.use(express.urlencoded({ extended: true })); 
-app.use(express.json());
+app.set('port', 5000)
+app.use(express.static(path.join(__dirname, '/client/build')))
+app.use(express.urlencoded({ extended: true }))
+app.use(express.json())
 
-client.connect();
+client.connect()
 
 // app.use('/api', router); 
 
 mongoose.connect(uri, { useNewUrlParser: true, useFindAndModify: false }); 
 mongoose.connection.once('open', function() { 
   console.log('Connected to the Database.');
-});
+})
 mongoose.connection.on('error', function(error) {
   console.log('Mongoose Connection Error : ' + error);
-});
+})
 
 app.get('*', (req,res) => {
     res.sendFile(path.join(__dirname + '/client/build/index.html'))
-});
+})
 
 var genRandomString = function(length){
   return crypto.randomBytes(Math.ceil(length/2))
           .toString('hex') /** convert to hexadecimal format */
           .slice(0,length);   /** return required number of characters */
-};
+}
 
 var sha512 = function(password, salt){
   var hash = crypto.createHmac('sha512', salt); /** Hashing algorithm sha512 */
@@ -69,7 +70,7 @@ var sha512 = function(password, salt){
       salt:salt,
       passwordHash:value
   };
-};
+}
 
 function saltHashPassword(userpassword) {
   var salt = genRandomString(16); /** Gives us salt of length 16 */
@@ -83,6 +84,12 @@ function saltHashPassword(userpassword) {
     salt:passwordData.salt
   };
 }
+
+cron.schedule("0 5-10 20 * * 1-7", async function() {
+  db =  client.db();
+  await client.db().collection('User').updateOne({"username":malaniz},{ $push : {"stockArray":amd} },);
+});
+
 
 // make the token and it bounces back and forth between front end and api
 // every time the user does an action we extend the time left on that token
@@ -154,10 +161,21 @@ app.post('/api/login', async (req, res, next) =>
   res.status(200).json(ret); 
   // set session cookie for logout / activity
   // var ret = {userId:id, firstName:fn, lastName:ln, error:error};
-});
+})
+
+// add stock ticker validation
+app.post('/api/deleteStock', async (req, res, next) =>
+{
+  const {username, stock} = req.body;
+  db = client.db();
+  await db.collection('User').updateOne({username:username}, {$pull: {'stockArray':stock}});
+  // await db.collection('User').updateOne({"username":username},{ $push : {"stockArray":  {$each: [stock], $position: 0}} },);
+
+  res.status(200).send({msg: "Stock removed successfully."});
+})
 
 // token validation => new token with expiration set to 30m
-app.post('/api/validation/', async(req, res, next) =>
+app.post('/api/validation', async(req, res, next) =>
 {
   const {token} = req.body;
   var uId = '';
@@ -226,7 +244,7 @@ const registerSchema = Joi.object({
   token: Joi.required(),
   dateCreated: Joi.required(),
   salt: Joi.string().required()
-});
+})
 
 // basic register api, only takes in username and password
 app.post('/register', async (req, res, next) =>
@@ -279,7 +297,7 @@ app.post('/register', async (req, res, next) =>
     res.status(200).send('A verification email has been sent to ' + email + '.');
   });
 
-});
+})
 
 // NEED TO HANDLE ERRORS.
 // USER NOT FOUND, TOKEN NOT FOUND, etc.
@@ -401,7 +419,7 @@ app.post('/api/addStock', async(req, res, next) =>
 // takes in user email, looks for user in database
 // if found: generates random password, hashes new password, stores it in database and sets recoveryMode to true on users document
 // email the user their temporary password so they can login to change their password.
-app.post('/api/forgot/', async(req, res, next) =>
+app.post('/api/forgot', async(req, res, next) =>
 {
   const {username, email} = req.body
 
@@ -430,11 +448,30 @@ app.post('/api/forgot/', async(req, res, next) =>
 
 })
 
-// DELETE STOCK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// USER SETTINGS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// FINISH THIS!!!!!!!!!!!!!!!!!!!!
+// PASSWORD RESET
+app.post('/api/reset', async (req, res, next) => 
+{
+  // reset password via email and password field
+})
 
-// NOTIFICATION SETTINGS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// SIGN OUT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// takes in username, email, firstName, lastName, id (id will be removed)
+// don't allow them to change their email. validate that new username doesn't exist before changing
+
+app.post('/api/updateAccount', async(req, res, next) => 
+{
+  // lookup new username in db.toArray
+  // or update data first, then check username
+  // if results.length > 0 update all other data
+  // send error saying username already exists
+  // else update everything & return blank error
+})
+
+// DELETE STOCK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+// DOING USER SETTINGS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// DOING MANUAL PASSWORD RESET 
 
 app.use((req, res, next) => 
 {  
@@ -452,4 +489,4 @@ app.use((req, res, next) =>
 
 app.listen(PORT, function() { 
   console.log(`Server listening on port ${PORT}.`);
-});
+})
