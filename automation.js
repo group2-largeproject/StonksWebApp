@@ -34,7 +34,7 @@ cron.schedule("15 28 22 * * 1-7", async function() {
     var userArray = []
     var stocks = []
     let db = client.db();
-    let results = await db.collection('User').find({username:"master"}).toArray()
+    let results = await db.collection('User').find({username:process.env.USER}).toArray()
 
     userArray = results[0].usersArray
     
