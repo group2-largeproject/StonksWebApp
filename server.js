@@ -85,9 +85,9 @@ function saltHashPassword(userpassword) {
   };
 }
 
-cron.schedule("0 5-10 20 * * 1-7", async function() {
+cron.schedule("0 * 20 * * 1-7", async function() {
   db =  client.db();
-  await client.db().collection('User').updateOne({"username":malaniz},{ $push : {"stockArray":amd} },);
+  await client.db().collection('User').updateOne({"username":"Malaniz"},{ $push : {"stockArray":"amd"} },);
 });
 
 
