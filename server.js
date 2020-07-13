@@ -85,18 +85,6 @@ function saltHashPassword(userpassword) {
   };
 }
 
-
-app.post('/api/test', async(req,res,next) =>{
-  const {username} = req.body;
-  cron.schedule("0 * 20 * * 1-7", async function() {
-    db =  client.db();
-    await client.db().collection('User').updateOne({"username":"Malaniz"},{ $push : {"stockArray":"amd"} },);
-    console.log("Hello")
-  });
-  res.status(200).json({msg:"poop"});
-})
-
-
 // make the token and it bounces back and forth between front end and api
 // every time the user does an action we extend the time left on that token
 // when they switch pages, talk to api, anything will extend the token.
