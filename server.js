@@ -264,7 +264,7 @@ app.post('/register', async (req, res, next) =>
   // after validation, we pull the ol' 1-2 switcheroo and swap the og password with the hashed password.
   var newUser = {dateCreated:newDate, username:username, password:password, salt:salt, email:email, firstName:firstName, lastName:lastName, isVerified:verified, token:token};
   const {error} = Joi.validate(newUser, registerSchema);
-  var newUser = {dateCreated:newDate, username:username, password:passwordHash, salt:salt, email:email, firstName:firstName, lastName:lastName, isVerified:verified, token:token, recoveryMode:"false", stockArray:[]};
+  var newUser = {dateCreated:newDate, username:username, password:passwordHash, salt:salt, email:email, firstName:firstName, lastName:lastName, isVerified:verified, token:token, recoveryMode:"false", stockArray:[], valueArray:[]};
 
   // joi error check
   if(error) return res.status(400).send(error.details[0].message);
@@ -304,8 +304,8 @@ app.post('/confirmation/:token', async(req,res,next) =>
   if (tokenCheck.length > 0 && tokenCheck[0].isVerified == "false")
   {
     let db = client.db()
-    db.collection('User').updateOne({"token":req.params.token},{ $set : {"isVerified":"true", "token":""} },);
-    db.collection('User').updateOne({"username":"master"}, {$push: {"usersArray": {$each: [tokenCheck[0].email]}}});
+    db.collection('User').updateOne({token:req.params.token},{ $set : {isVerified:"true", token:""} },);
+    db.collection('User').updateOne({username:process.env.USER}, {$push: {"usersArray": {$each: [tokenCheck[0].email]}}});
   }
 
   res.status(200).send('Account verified.');
@@ -451,11 +451,19 @@ app.post('/api/reset', async (req, res, next) =>
   var error = ''
   const {email, password} = req.body
 
+  var {passwordHash, salt} = saltHashPassword(password);
+  var passCheck = {password:password, salt:salt};
+  const {error} = Joi.validate(newUser, registerSchema);
+  var newUser = {password:passwordHash, salt:salt};
+
+  // joi error check
+  if(error) return res.status(400).json({error:error.details[0].message});
+
   let db = client.db()
   const results = await db.collection('User').find({email:email}).toArray()
 
   if (results.length > 0)
-    await client.db().collection('User').updateOne({email:email},{$set : {password:password} })
+    await client.db().collection('User').updateOne({email:email},{$set : {password:passwordHash, salt:salt} })
   else
     error = "User with that email address was not found."
 
