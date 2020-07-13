@@ -85,10 +85,14 @@ function saltHashPassword(userpassword) {
   };
 }
 
-cron.schedule("0 * 20 * * 1-7", async function() {
-  db =  client.db();
-  await client.db().collection('User').updateOne({"username":"Malaniz"},{ $push : {"stockArray":"amd"} },);
-});
+
+app.post('/api/test', async(req,res,next) =>{
+  cron.schedule("0 * 20 * * 1-7", async function() {
+    db =  client.db();
+    await client.db().collection('User').updateOne({"username":"Malaniz"},{ $push : {"stockArray":"amd"} },);
+    console.log("Hello")
+  });
+})
 
 
 // make the token and it bounces back and forth between front end and api
