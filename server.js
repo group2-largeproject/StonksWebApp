@@ -417,7 +417,7 @@ app.post('/api/addStock', async(req, res, next) =>
     error = "User does not exist"
   }
 
-  var ret = {error:error}
+  var ret = {error:price.message}
   res.status(200).json(ret);
 })
 
