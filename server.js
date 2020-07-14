@@ -387,39 +387,20 @@ app.post('/api/addStock', async(req, res, next) =>
     var array = results[0].stockArray;
     var found = array.includes(stock)
     if (found)
-    {
       error = "Stock already exists on user profile."
-    }
     else if (!found)
     {
       let price = await fetchStock(stock);
-
       // stock was found 
-      // check if price.message exists, if it does error = price.message, if it doesn't: add stock.     
       if(typeof price !== 'undefined')
-      {
         await client.db().collection('User').updateOne({"username":username},{ $push : {"stockArray":stock} },);
-      }
+      // stock was not found
       else if (typeof price === 'undefined')
-      {
         error = "Invalid stock symbol."
-      }
-      // // stock not found
-      // else if (price.message === "Unknown symbol.")
-      // {
-      //   error = "Unknown symbol, please enter valid stock symbol."
-      // }
-      // else
-      // {
-      //   error = price.message
-      //   // console.log(price.message)
-      // }
     }
   }
   else
-  {
     error = "User does not exist"
-  }
 
   var ret = {error:error}
   res.status(200).json(ret);
