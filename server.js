@@ -250,40 +250,40 @@ app.post('/register', async (req, res, next) =>
   // accept user input & format it to be entered into database
   const {username, password, email, firstName, lastName} = req.body;
 
-  var {passwordHash, salt} = saltHashPassword(password);
-  // salted it ^ !!!
+  var {passwordHash, salt} = saltHashPassword(password)
+  // salted it ^ !!
   // temp.passwordHash = hashed password && temp.salt = salt
 
   // Checks to see if the email is in use, if it is then it won't let the user sign up.
-  const emailDbCheck = client.db();
-  const emailCheck = await emailDbCheck.collection('User').findOne({email:email});
-  if (emailCheck) return res.status(400).send({msg: "The email address you have entered is already associated with another account."});
+  const emailDbCheck = client.db()
+  const emailCheck = await emailDbCheck.collection('User').findOne({email:email})
+  if (emailCheck) return res.status(400).send({msg: "The email address you have entered is already associated with another account."})
 
-  const token = crypto.randomBytes(16).toString('hex');
+  const token = crypto.randomBytes(16).toString('hex')
   // passing new user data to joi for validation before we send him off to boating school
   // after validation, we pull the ol' 1-2 switcheroo and swap the og password with the hashed password.
-  var newUser = {dateCreated:newDate, username:username, password:password, salt:salt, email:email, firstName:firstName, lastName:lastName, isVerified:verified, token:token};
-  const {error} = Joi.validate(newUser, registerSchema);
-  var newUser = {dateCreated:newDate, username:username, password:passwordHash, salt:salt, email:email, firstName:firstName, lastName:lastName, isVerified:verified, token:token, recoveryMode:"false", stockArray:[], valueArray:[], dateArray:[]};
+  var newUser = {dateCreated:newDate, username:username, password:password, salt:salt, email:email, firstName:firstName, lastName:lastName, isVerified:verified, token:token}
+  const {error} = Joi.validate(newUser, registerSchema)
+  var newUser = {dateCreated:newDate, username:username, password:passwordHash, salt:salt, email:email, firstName:firstName, lastName:lastName, isVerified:verified, token:token, recoveryMode:"false", stockArray:[], valueArray:[]}
 
   // joi error check
-  if(error) return res.status(400).send(error.details[0].message);
+  if(error) return res.status(400).send(error.details[0].message)
 
   // try to add user into the database
   try
   {
-    const db = client.db();
-    db.collection('User').insertOne(newUser);
+    const db = client.db()
+    await db.collection('User').insertOne(newUser)
 
     for (let i = 0; i < 5; i++)
-      await db.collection('User').updateOne({email:email},{$push : {valueArray:0.0} });
+      await db.collection('User').updateOne({email:email},{$push : {valueArray:0.0} })
     
-    var transporter = nodemailer.createTransport({ service: 'Sendgrid', auth: { user: process.env.SENDGRID_USERNAME, pass: process.env.SENDGRID_PASSWORD } });
-    var mailOptions = { from: 'michael.yeah@pm.me', to: email, subject: 'Account Verification Token', text: 'Hello,\n\n' + 'Please verify your account by clicking the link: ' + process.env.BASE_URL + 'confirmation\/' + token + '\n' };
+    var transporter = nodemailer.createTransport({ service: 'Sendgrid', auth: { user: process.env.SENDGRID_USERNAME, pass: process.env.SENDGRID_PASSWORD } })
+    var mailOptions = { from: 'michael.yeah@pm.me', to: email, subject: 'Account Verification Token', text: 'Hello,\n\n' + 'Please verify your account by clicking the link: ' + process.env.BASE_URL + 'confirmation\/' + token + '\n' }
   }
   catch(e)
   {
-    errordb = e.toString();
+    errordb = e.toString()
   }
 
   // WILL ERROR OUT WE HIT THE TRANSPORTER SEND MAIL ERROR.
@@ -291,15 +291,13 @@ app.post('/register', async (req, res, next) =>
   transporter.sendMail(mailOptions, function(err){
     if (err) { return res.status(500).send({msg: err.message, err:errordb}); }
     res.status(200).send('A verification email has been sent to ' + email + '.');
-  });
+  })
 
 })
 
-// NEED TO HANDLE ERRORS.
-// USER NOT FOUND, TOKEN NOT FOUND, etc.
-// ERASE TOKEN AFTER CONFIRMATION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 app.post('/confirmation/:token', async(req,res,next) =>
 {
+  var error=''
   let db = client.db();
   const tokenCheck = await db.collection('User').find({token:req.params.token}).toArray();
 
@@ -310,8 +308,11 @@ app.post('/confirmation/:token', async(req,res,next) =>
     db.collection('User').updateOne({token:req.params.token},{ $set : {isVerified:"true", token:""} },);
     db.collection('User').updateOne({username:process.env.USER}, {$push: {"usersArray": {$each: [tokenCheck[0].email]}}});
   }
+  else
+    error = 'User with that token was not found || User has already been verified.'
 
-  res.status(200).send('Account verified.');
+  ret = {error:error}
+  res.status(200).json(ret);
 })
 
 // adds zeros to the time/date if it is any digit less than 10
@@ -387,16 +388,14 @@ app.post('/api/addStock', async(req, res, next) =>
       let price = await fetchStock(stock);
 
       // stock was found      
-      if(price.message !== "Unknown symbol")
+      if(price.message !== "Unknown symbol.")
       {
         await client.db().collection('User').updateOne({"username":username},{ $push : {"stockArray":stock} },);
-        console.log("yay!")
       }
       // stock not found
-      else if (price.message === "Unknown symbol")
+      else if (price.message === "Unknown symbol.")
       {
         error = "Unknown symbol, please enter valid stock symbol."
-        console.log("Stock not found!")
       }
       else
       {
@@ -411,7 +410,7 @@ app.post('/api/addStock', async(req, res, next) =>
   }
 
   var ret = {error:error}
-  res.status(200).send(ret);
+  res.status(200).json(ret);
 })
 
 // takes in user email, looks for user in database

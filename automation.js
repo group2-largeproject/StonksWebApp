@@ -115,11 +115,11 @@ cron.schedule("00 00 16 * * 1-5", async function() {
 
     while (dLength > 4)
     {
-      await db.collection('User').updateOne( { username:"power" }, { $pop: { datesArray: -1 } } )
+      await db.collection('User').updateOne( { username:masterUser }, { $pop: { datesArray: -1 } } )
       dLength--
     }
 
-    await db.collection('User').updateOne( { username:"power" }, { $push: { datesArray:currDate } } )
+    await db.collection('User').updateOne( { username:masterUser }, { $push: { datesArray:currDate } } )
     
     // get current date & time, store it here
     
