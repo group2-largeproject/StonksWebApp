@@ -83,6 +83,95 @@ function saltHashPassword(userpassword) {
     salt:passwordData.salt
   };
 }
+const registerSchema = Joi.object({
+  username: Joi.string().required(),
+  password: Joi.string().alphanum().min(8).max(20).required(),
+  firstName: Joi.string().required(),
+  lastName: Joi.string().required(),
+  email: Joi.string().email().required(),
+  isVerified: Joi.string().required(),
+  token: Joi.required(),
+  dateCreated: Joi.required(),
+  salt: Joi.string().required()
+})
+
+const passResetSchema = Joi.object({
+  password: Joi.string().alphanum().min(8).max(20).required(),
+  salt: Joi.string().required()
+})
+
+// basic register api, only takes in username and password
+app.post('/register', async (req, res, next) =>
+{
+  var errordb = '';
+  let verified = "false";
+  var d = new Date();
+  let newDate = getDate(d);
+  const db = client.db()
+  const {username, password, email, firstName, lastName} = req.body;
+
+  var {passwordHash, salt} = saltHashPassword(password)
+
+  const userCheck = await db.collection('User').findOne({username:username})
+  if (userCheck) return res.status(400).send({msg: "The username you have entered is already associated with another account."})
+
+  const emailCheck = await db.collection('User').findOne({email:email})
+  if (emailCheck) return res.status(400).send({msg: "The email address you have entered is already associated with another account."})
+
+  const token = crypto.randomBytes(16).toString('hex')
+  // passing new user data to joi for validation before we send him off to boating school
+  // after validation, we pull the ol' 1-2 switcheroo and swap the og password with the hashed password.
+  var newUser = {dateCreated:newDate, username:username, password:password, salt:salt, email:email, firstName:firstName, lastName:lastName, isVerified:verified, token:token}
+  const {error} = Joi.validate(newUser, registerSchema)
+  var newUser = {dateCreated:newDate, username:username, password:passwordHash, salt:salt, email:email, firstName:firstName, lastName:lastName, isVerified:verified, token:token, recoveryMode:"false", stockArray:[], valueArray:[]}
+
+  // joi error check
+  if(error) return res.status(400).send(error.details[0].message)
+
+  // try to add user into the database
+  try
+  {
+    await db.collection('User').insertOne(newUser)
+
+    for (let i = 0; i < 5; i++)
+      await db.collection('User').updateOne({email:email},{$push : {valueArray:0.0} })
+    
+    var transporter = nodemailer.createTransport({ service: 'Sendgrid', auth: { user: process.env.SENDGRID_USERNAME, pass: process.env.SENDGRID_PASSWORD } })
+    var mailOptions = { from: 'michael.yeah@pm.me', to: email, subject: 'Account Verification Token', text: 'Hello,\n\n' + 'Please verify your account by clicking the link: ' + process.env.BASE_URL + 'confirmation\/' + token + '\n' }
+  }
+  catch(e)
+  {
+    errordb = e.toString()
+  }
+
+  // WILL ERROR OUT WE HIT THE TRANSPORTER SEND MAIL ERROR.
+  // WILL ATTEMPT TO SET AND SEND HEADERS TWICE 
+  transporter.sendMail(mailOptions, function(err){
+    if (err) { return res.status(500).send({msg: err.message, err:errordb}); }
+    res.status(200).send('A verification email has been sent to ' + email + '.');
+  })
+
+})
+
+app.post('/confirmation/:token', async(req,res,next) =>
+{
+  var error=''
+  let db = client.db();
+  const tokenCheck = await db.collection('User').find({token:req.params.token}).toArray();
+
+  // account verification
+  if (tokenCheck.length > 0 && tokenCheck[0].isVerified == "false")
+  {
+    let db = client.db()
+    db.collection('User').updateOne({token:req.params.token},{ $set : {isVerified:"true", token:""} },);
+    db.collection('User').updateOne({username:process.env.USER}, {$push: {"usersArray": {$each: [tokenCheck[0].email]}}});
+  }
+  else
+    error = 'User with that token was not found || User has already been verified.'
+
+  ret = {error:error}
+  res.status(200).json(ret);
+})
 
 // make the token and it bounces back and forth between front end and api
 // every time the user does an action we extend the time left on that token
@@ -156,26 +245,6 @@ app.post('/api/login', async (req, res, next) =>
   // var ret = {userId:id, firstName:fn, lastName:ln, error:error};
 })
 
-// add stock ticker validation
-app.post('/api/deleteStock', async (req, res, next) =>
-{
-  const {username, stock} = req.body
-  var error = ''
-  db = client.db()
-
-  var results = await db.collection('User').find({username:username}).toArray()
-
-  if (results.length <= 0) 
-    error = "User not found."
-  else
-    await db.collection('User').updateOne({username:username}, {$pull: {'stockArray':stock}})
-  
-    // await db.collection('User').updateOne({"username":username},{ $push : {"stockArray":  {$each: [stock], $position: 0}} },);
-
-  let ret = {error:error} 
-  res.status(200).json(ret)
-})
-
 // token validation => new token with expiration set to 30m
 app.post('/api/validation', async(req, res, next) =>
 {
@@ -234,93 +303,6 @@ app.post('/api/logout', async(req, res, next) =>
   res.status(200).json(ret);
 })
 
-const registerSchema = Joi.object({
-  username: Joi.string().required(),
-  password: Joi.string().required().alphanum().min(8).max(20),
-  firstName: Joi.string().required(),
-  lastName: Joi.string().required(),
-  email: Joi.string().email().required(),
-  isVerified: Joi.string().required(),
-  token: Joi.required(),
-  dateCreated: Joi.required(),
-  salt: Joi.string().required()
-})
-
-// basic register api, only takes in username and password
-app.post('/register', async (req, res, next) =>
-{
-  var errordb = '';
-  let verified = "false";
-  var d = new Date();
-  let newDate = getDate(d);
-
-  // accept user input & format it to be entered into database
-  const {username, password, email, firstName, lastName} = req.body;
-
-  var {passwordHash, salt} = saltHashPassword(password)
-  // salted it ^ !!
-  // temp.passwordHash = hashed password && temp.salt = salt
-
-  // Checks to see if the email is in use, if it is then it won't let the user sign up.
-  const emailDbCheck = client.db()
-  const emailCheck = await emailDbCheck.collection('User').findOne({email:email})
-  if (emailCheck) return res.status(400).send({msg: "The email address you have entered is already associated with another account."})
-
-  const token = crypto.randomBytes(16).toString('hex')
-  // passing new user data to joi for validation before we send him off to boating school
-  // after validation, we pull the ol' 1-2 switcheroo and swap the og password with the hashed password.
-  var newUser = {dateCreated:newDate, username:username, password:password, salt:salt, email:email, firstName:firstName, lastName:lastName, isVerified:verified, token:token}
-  const {error} = Joi.validate(newUser, registerSchema)
-  var newUser = {dateCreated:newDate, username:username, password:passwordHash, salt:salt, email:email, firstName:firstName, lastName:lastName, isVerified:verified, token:token, recoveryMode:"false", stockArray:[], valueArray:[]}
-
-  // joi error check
-  if(error) return res.status(400).send(error.details[0].message)
-
-  // try to add user into the database
-  try
-  {
-    const db = client.db()
-    await db.collection('User').insertOne(newUser)
-
-    for (let i = 0; i < 5; i++)
-      await db.collection('User').updateOne({email:email},{$push : {valueArray:0.0} })
-    
-    var transporter = nodemailer.createTransport({ service: 'Sendgrid', auth: { user: process.env.SENDGRID_USERNAME, pass: process.env.SENDGRID_PASSWORD } })
-    var mailOptions = { from: 'michael.yeah@pm.me', to: email, subject: 'Account Verification Token', text: 'Hello,\n\n' + 'Please verify your account by clicking the link: ' + process.env.BASE_URL + 'confirmation\/' + token + '\n' }
-  }
-  catch(e)
-  {
-    errordb = e.toString()
-  }
-
-  // WILL ERROR OUT WE HIT THE TRANSPORTER SEND MAIL ERROR.
-  // WILL ATTEMPT TO SET AND SEND HEADERS TWICE 
-  transporter.sendMail(mailOptions, function(err){
-    if (err) { return res.status(500).send({msg: err.message, err:errordb}); }
-    res.status(200).send('A verification email has been sent to ' + email + '.');
-  })
-
-})
-
-app.post('/confirmation/:token', async(req,res,next) =>
-{
-  var error=''
-  let db = client.db();
-  const tokenCheck = await db.collection('User').find({token:req.params.token}).toArray();
-
-  // account verification
-  if (tokenCheck.length > 0 && tokenCheck[0].isVerified == "false")
-  {
-    let db = client.db()
-    db.collection('User').updateOne({token:req.params.token},{ $set : {isVerified:"true", token:""} },);
-    db.collection('User').updateOne({username:process.env.USER}, {$push: {"usersArray": {$each: [tokenCheck[0].email]}}});
-  }
-  else
-    error = 'User with that token was not found || User has already been verified.'
-
-  ret = {error:error}
-  res.status(200).json(ret);
-})
 
 // adds zeros to the time/date if it is any digit less than 10
 // e.g if minutes = 7 this function will turn minutes into "07".
@@ -365,22 +347,13 @@ async function fetchStock(stock)
 }
 
 // https://www.npmjs.com/package/node-iex-cloud
-// WORK ON THE RETURN JSON DATA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// User sends stock to add -> find user -> check stocks array, verify stock doesn't exist in array 
-// -> check stock API to verify stock exists -> add stock to user.stock array -> EOD(separate api): ping stock API with stock array
 app.post('/api/addStock', async(req, res, next) => 
 {
-  // validate jwt through api
-  // 
   var error = '';
   const {username, stock} = req.body;
-  // var d = new Date();
-  // let newDate = getDate(d);
-  // let newTime = getTime(d);
 
   const db = client.db();
   const results = await db.collection('User').find({username:username}).toArray();
-  // const results = await db.collection('Stocks').find({symbol:"tsla"}).toArray();
 
   if (results.length > 0)
   {
@@ -404,6 +377,26 @@ app.post('/api/addStock', async(req, res, next) =>
 
   var ret = {error:error}
   res.status(200).json(ret);
+})
+
+// add stock ticker validation
+app.post('/api/deleteStock', async (req, res, next) =>
+{
+  const {username, stock} = req.body
+  var error = ''
+  db = client.db()
+
+  var results = await db.collection('User').find({username:username}).toArray()
+
+  if (results.length <= 0) 
+    error = "User not found."
+  else
+    await db.collection('User').updateOne({username:username}, {$pull: {'stockArray':stock}})
+  
+    // await db.collection('User').updateOne({"username":username},{ $push : {"stockArray":  {$each: [stock], $position: 0}} },);
+
+  let ret = {error:error} 
+  res.status(200).json(ret)
 })
 
 // takes in user email, looks for user in database
@@ -438,31 +431,28 @@ app.post('/api/forgot', async(req, res, next) =>
 
 })
 
-// FINISH THIS!!!!!!!!!!!!!!!!!!!!
-// PASSWORD RESET
+// PASSWORD CHANGE
 app.post('/api/reset', async (req, res, next) => 
 {
   // reset password via email and password field
-  var error = ''
+  var newError = ''
   const {email, password} = req.body
-
-  var {passwordHash, salt} = saltHashPassword(password);
-  var passCheck = {password:password, salt:salt};
-  const {errorCheck} = Joi.validate(newUser, registerSchema);
-  var newUser = {password:passwordHash, salt:salt};
-
-  // joi error check
-  if(errorCheck) return res.status(400).json({error:errorCheck.details[0].message});
-
   let db = client.db()
+  var {passwordHash, salt} = saltHashPassword(password)
+  var passCheck = {password:password, salt:salt}
+
+  const {error} = Joi.validate(passCheck, passResetSchema)
+
+  if(error) return res.status(400).json({error:error.details[0].message});
+
   const results = await db.collection('User').find({email:email}).toArray()
 
   if (results.length > 0)
     await client.db().collection('User').updateOne({email:email},{$set : {password:passwordHash, salt:salt} })
   else
-    error = "User with that email address was not found."
+    newError = "User with that email address was not found."
 
-  let ret = {error:error}
+  let ret = {error:newError}
   res.status(200).json(ret)
 })
 
@@ -498,8 +488,38 @@ app.post('/api/updateAccount', async(req, res, next) =>
 
 })
 
-// DELETE STOCK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// takes in a username to return the master date array, the users stock array, and the users value array
+app.post('/api/getData', async (req, res, next) => {
 
+  // returns:
+  // master  datesArray
+  // user    stockArray
+  // user    valueArray
+
+  const {username} = req.body
+  var error = ''
+  db = client.db()
+  var dates = []
+  var stonks = []
+  var values = []
+
+  let results = await db.collection('User').find({username:username}).toArray()
+  let master = await db.collection('User').find({username:process.env.MASTERUSER}).toArray()
+
+  if (results.length > 0)
+  {
+    // console.log(results[0])
+    dates = master[0].datesArray
+    stonks = results[0].stockArray
+    values = results[0].valueArray
+  }
+  else
+    error = "User does not exist."
+
+  ret = {dates:dates,stocks:stonks,values:values,error:error}
+  res.status(200).json(ret)
+
+})
 
 app.use((req, res, next) => 
 {  
