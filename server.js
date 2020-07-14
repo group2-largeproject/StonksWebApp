@@ -264,7 +264,7 @@ app.post('/register', async (req, res, next) =>
   // after validation, we pull the ol' 1-2 switcheroo and swap the og password with the hashed password.
   var newUser = {dateCreated:newDate, username:username, password:password, salt:salt, email:email, firstName:firstName, lastName:lastName, isVerified:verified, token:token};
   const {error} = Joi.validate(newUser, registerSchema);
-  var newUser = {dateCreated:newDate, username:username, password:passwordHash, salt:salt, email:email, firstName:firstName, lastName:lastName, isVerified:verified, token:token, recoveryMode:"false", stockArray:[], valueArray:[]};
+  var newUser = {dateCreated:newDate, username:username, password:passwordHash, salt:salt, email:email, firstName:firstName, lastName:lastName, isVerified:verified, token:token, recoveryMode:"false", stockArray:[], valueArray:[], dateArray:[]};
 
   // joi error check
   if(error) return res.status(400).send(error.details[0].message);
@@ -274,6 +274,9 @@ app.post('/register', async (req, res, next) =>
   {
     const db = client.db();
     db.collection('User').insertOne(newUser);
+
+    for (let i = 0; i < 5; i++)
+      await db.collection('User').updateOne({email:email},{$push : {valueArray:0.0} });
     
     var transporter = nodemailer.createTransport({ service: 'Sendgrid', auth: { user: process.env.SENDGRID_USERNAME, pass: process.env.SENDGRID_PASSWORD } });
     var mailOptions = { from: 'michael.yeah@pm.me', to: email, subject: 'Account Verification Token', text: 'Hello,\n\n' + 'Please verify your account by clicking the link: ' + process.env.BASE_URL + 'confirmation\/' + token + '\n' };
@@ -327,7 +330,7 @@ function addZero(i)
 function getDate(d)
 {
   // Days: 1 = Sunday, 2 = Monday, 3 = Tuesday, 4 = Wednesday, etc.
-  var day = addZero(d.getUTCDate() + 1);
+  var day = addZero(d.getUTCDate());
 
   // Month: 1 = Jan, 2 = Feb, 3 = March, 4 = April, etc.
   var month = addZero(d.getUTCMonth() + 1);  
@@ -505,9 +508,6 @@ app.post('/api/updateAccount', async(req, res, next) =>
 
 // DELETE STOCK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-
-// DOING USER SETTINGS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// DOING MANUAL PASSWORD RESET 
 
 app.use((req, res, next) => 
 {  

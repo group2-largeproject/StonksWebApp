@@ -24,19 +24,101 @@ mongoose.connection.on('error', function(error) {
   console.log('Mongoose Connection Error : ' + error);
 })
 
+// adds zeros to the time/date if it is any digit less than 10
+// e.g if minutes = 7 this function will turn minutes into "07".
+function addZero(i)
+{
+  if (i < 10)
+  {
+    i = "0" + i;
+  }
+  return i;
+}
+
+// VALUE ARRAY
+//  0   1   2   3   4
+// 123 123 123 123 123 
+
+// DATE ARRAY
+// MON  TUES  WED  THU  FRI
+//  0     1    2    3    4
+// 1/20 1/21 1/22 1/23 1/24
+
+// new user starts on wednesday[2]:
+// for i < dayOfWeek -> 
+// 
+// 
+
+// *****************************
+// USER 2
+
+// VALUE ARRAY
+//  0   1   2   3   4
+//  0   0  123 123 123 
+
+// MASTER DATE ARRAY
+// MON  TUES  WED  THU  FRI
+//  0     1    2    3    4
+// 1/20 1/21 1/22 1/23 1/24
+
+// returns 0 if it's a monday, 1 if tuesday, etc.
+function currDay()
+{
+  var d = new Date()
+  return (d.getDay()-1)
+}
+
+// adds zeros to the time/date if it is any digit less than 10
+// e.g if minutes = 7 this function will turn minutes into "07".
+function addZero(i)
+{
+  if (i < 10)
+  {
+    i = "0" + i;
+  }
+  return i;
+}
+
+// gets the current date in UTC format.
+// YEAR/MONTH/DAY
+function getDate(d)
+{
+  // Days: 1 = Sunday, 2 = Monday, 3 = Tuesday, 4 = Wednesday, etc.
+  var day = addZero(d.getUTCDate());
+
+  // Month: 1 = Jan, 2 = Feb, 3 = March, 4 = April, etc.
+  var month = addZero(d.getUTCMonth() + 1);  
+  var year = d.getUTCFullYear();
+  newDate =  month + "/" + day + "/" + year;
+  return newDate;
+}
+
 async function fetchStock(stock)
 {
   return iex.symbol(stock.toString()).price();
 }
 
 
-cron.schedule("15 28 22 * * 1-7", async function() {
+cron.schedule("00 00 16 * * 1-5", async function() {
     var userArray = []
     var stocks = []
+    var d = new Date()
+    let dayOfWeek = currDay()
+    let currDate = getDate(d)
     let db = client.db();
-    let results = await db.collection('User').find({username:process.env.USER}).toArray()
+    let results = await db.collection('User').find({username:"power"}).toArray()
 
     userArray = results[0].usersArray
+    dateArray = results[0].datesArray
+    let dLength = dateArray.length
+
+    while (dLength > 4)
+    {
+      await db.collection('User').updateOne( { username:"power" }, { $pop: { datesArray: -1 } } )
+      dLength--
+    }
+
+    await db.collection('User').updateOne( { username:"power" }, { $push: { datesArray:currDate } } )
     
     // get current date & time, store it here
     
@@ -44,16 +126,28 @@ cron.schedule("15 28 22 * * 1-7", async function() {
     {
         let totalPrice = 0;
         let results2 = await db.collection('User').find({email:userArray[i]}).toArray()
+
         stocks = results2[0].stockArray;
-        console.log(stocks)
+        values = results2[0].valueArray;
+        let vLength = values.length
+
         for (let j = 0; j < stocks.length; j++)
         {
             let currPrice = await fetchStock(stocks[j]);
             totalPrice += currPrice
             console.log(totalPrice)
         }
-        // if results2.length > (5 days), pop the front of the array & push new totalPrice to the back
+
+        while (vLength > 4)
+        {
+          await db.collection('User').updateOne( { email:userArray[i] }, { $pop: { valueArray: -1 } } )
+          vLength--
+        }
+
         await db.collection('User').updateOne({email:userArray[i]}, { $push: {"valueArray":totalPrice}});
-    }    
+
+    }
+    
+    
 
 });
