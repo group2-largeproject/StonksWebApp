@@ -453,11 +453,11 @@ app.post('/api/reset', async (req, res, next) =>
 
   var {passwordHash, salt} = saltHashPassword(password);
   var passCheck = {password:password, salt:salt};
-  const {error} = Joi.validate(newUser, registerSchema);
+  const {errorCheck} = Joi.validate(newUser, registerSchema);
   var newUser = {password:passwordHash, salt:salt};
 
   // joi error check
-  if(error) return res.status(400).json({error:error.details[0].message});
+  if(errorCheck) return res.status(400).json({error:errorCheck.details[0].message});
 
   let db = client.db()
   const results = await db.collection('User').find({email:email}).toArray()
