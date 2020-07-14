@@ -396,11 +396,11 @@ app.post('/api/addStock', async(req, res, next) =>
 
       // stock was found 
       // check if price.message exists, if it does error = price.message, if it doesn't: add stock.     
-      if(typeof price.message !== 'undefined')
+      if(typeof price !== 'undefined')
       {
         await client.db().collection('User').updateOne({"username":username},{ $push : {"stockArray":stock} },);
       }
-      else if (typeof price.message === 'undefined')
+      else if (typeof price === 'undefined')
       {
         error = "Invalid stock symbol."
       }
