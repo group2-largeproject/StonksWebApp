@@ -396,20 +396,24 @@ app.post('/api/addStock', async(req, res, next) =>
 
       // stock was found 
       // check if price.message exists, if it does error = price.message, if it doesn't: add stock.     
-      if(price.message !== "Unknown symbol.")
+      if(typeof price.message !== 'undefined')
       {
         await client.db().collection('User').updateOne({"username":username},{ $push : {"stockArray":stock} },);
       }
-      // stock not found
-      else if (price.message === "Unknown symbol.")
+      else if (typeof price.message === 'undefined')
       {
-        error = "Unknown symbol, please enter valid stock symbol."
+        error = "Invalid stock symbol."
       }
-      else
-      {
-        error = price.message
-        // console.log(price.message)
-      }
+      // // stock not found
+      // else if (price.message === "Unknown symbol.")
+      // {
+      //   error = "Unknown symbol, please enter valid stock symbol."
+      // }
+      // else
+      // {
+      //   error = price.message
+      //   // console.log(price.message)
+      // }
     }
   }
   else
@@ -417,7 +421,7 @@ app.post('/api/addStock', async(req, res, next) =>
     error = "User does not exist"
   }
 
-  var ret = {error:price.message}
+  var ret = {error:error}
   res.status(200).json(ret);
 })
 
