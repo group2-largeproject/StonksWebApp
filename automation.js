@@ -8,6 +8,8 @@ const MongoClient = require('mongodb').MongoClient
 const uri = process.env.MONGO_URL
 const client = new MongoClient(uri)
 
+const masterUser = process.env.MASTERUSER 
+
 const iex = new IEXCloudClient(fetch, {
     sandbox: true,
     publishable: process.env.STONK_TOK,
@@ -98,7 +100,6 @@ async function fetchStock(stock)
   return iex.symbol(stock.toString()).price();
 }
 
-
 cron.schedule("00 00 16 * * 1-5", async function() {
     var userArray = []
     var stocks = []
@@ -106,7 +107,7 @@ cron.schedule("00 00 16 * * 1-5", async function() {
     let dayOfWeek = currDay()
     let currDate = getDate(d)
     let db = client.db();
-    let results = await db.collection('User').find({username:"power"}).toArray()
+    let results = await db.collection('User').find({username:masterUser}).toArray()
 
     userArray = results[0].usersArray
     dateArray = results[0].datesArray
@@ -147,7 +148,5 @@ cron.schedule("00 00 16 * * 1-5", async function() {
         await db.collection('User').updateOne({email:userArray[i]}, { $push: {"valueArray":totalPrice}});
 
     }
-    
-    
 
 });
