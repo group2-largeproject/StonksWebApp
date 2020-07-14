@@ -159,12 +159,21 @@ app.post('/api/login', async (req, res, next) =>
 // add stock ticker validation
 app.post('/api/deleteStock', async (req, res, next) =>
 {
-  const {username, stock} = req.body;
-  db = client.db();
-  await db.collection('User').updateOne({username:username}, {$pull: {'stockArray':stock}});
-  // await db.collection('User').updateOne({"username":username},{ $push : {"stockArray":  {$each: [stock], $position: 0}} },);
+  const {username, stock} = req.body
+  var error = ''
+  db = client.db()
 
-  res.status(200).send({msg: "Stock removed successfully."});
+  var results = await db.collection('User').find({username:username}).toArray()
+
+  if (results.length <= 0) 
+    error = "User not found."
+  else
+    await db.collection('User').updateOne({username:username}, {$pull: {'stockArray':stock}})
+  
+    // await db.collection('User').updateOne({"username":username},{ $push : {"stockArray":  {$each: [stock], $position: 0}} },);
+
+  let ret = {error:error} 
+  res.status(200).json(ret)
 })
 
 // token validation => new token with expiration set to 30m
@@ -210,9 +219,7 @@ app.post('/api/logout', async(req, res, next) =>
     if (!isNull(err))
     {
       if (err.message === "jwt expired")
-      {
         error = "You are already logged out."
-      }
       else
         error = err.message;
     }
@@ -387,7 +394,8 @@ app.post('/api/addStock', async(req, res, next) =>
     {
       let price = await fetchStock(stock);
 
-      // stock was found      
+      // stock was found 
+      // check if price.message exists, if it does error = price.message, if it doesn't: add stock.     
       if(price.message !== "Unknown symbol.")
       {
         await client.db().collection('User').updateOne({"username":username},{ $push : {"stockArray":stock} },);
