@@ -14,8 +14,6 @@ const { restart } = require('nodemon')
 const jwt = require('jsonwebtoken')
 const { isNull } = require('util')
 const { json } = require('body-parser')
-// const session = require('express-session')
-// const cookieParser = require('cookie-parser')
 
 const iex = new IEXCloudClient(fetch, {
   sandbox: true,
@@ -26,8 +24,6 @@ const iex = new IEXCloudClient(fetch, {
 app.use(cors())
 app.use(bodyParser.json())
 require('dotenv').config()
-
-// const router = require('./routes/index');
 
 const PORT = process.env.PORT || 5000
 const MongoClient = require('mongodb').MongoClient
@@ -40,8 +36,6 @@ app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 
 client.connect()
-
-// app.use('/api', router); 
 
 mongoose.connect(uri, { useNewUrlParser: true, useFindAndModify: false }); 
 mongoose.connection.once('open', function() { 
@@ -431,10 +425,9 @@ app.post('/api/forgot', async(req, res, next) =>
 
 })
 
-// PASSWORD CHANGE
+// Takes in user email & password, validates them and allows the user to change their password.
 app.post('/api/reset', async (req, res, next) => 
 {
-  // reset password via email and password field
   var newError = ''
   const {email, password} = req.body
   let db = client.db()
@@ -457,7 +450,7 @@ app.post('/api/reset', async (req, res, next) =>
 })
 
 // takes in username, email, firstName, lastName, id (id will be removed)
-// don't allow them to change their email. validate that new username doesn't exist before changing
+// don't allow them to change their email/username. validate that new username doesn't exist before changing
 app.post('/api/updateAccount', async(req, res, next) => 
 {
   // lookup new username in db.toArray
