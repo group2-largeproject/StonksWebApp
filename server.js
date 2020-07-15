@@ -131,15 +131,13 @@ app.post('/register', async (req, res, next) =>
       await db.collection('User').updateOne({email:email},{$push : {valueArray:0.0} })
     
     var transporter = nodemailer.createTransport({ service: 'Sendgrid', auth: { user: process.env.SENDGRID_USERNAME, pass: process.env.SENDGRID_PASSWORD } })
-    var mailOptions = { from: 'michael.yeah@pm.me', to: email, subject: 'Account Verification Token', text: 'Hello,\n\n' + 'Please verify your account by clicking the link: ' + process.env.BASE_URL + 'confirmation\/' + token + '\n' }
+    var mailOptions = { from: 'michael.yeah@pm.me', to: email, subject: 'Account Verification Token', text: 'Hello ' + firstName + ',\n\n' + 'Please verify your account by clicking this link: ' + process.env.BASE_URL + 'confirmation\/' + token + '\n' }
   }
   catch(e)
   {
     errordb = e.toString()
   }
 
-  // WILL ERROR OUT WE HIT THE TRANSPORTER SEND MAIL ERROR.
-  // WILL ATTEMPT TO SET AND SEND HEADERS TWICE 
   transporter.sendMail(mailOptions, function(err){
     if (err) { return res.status(500).send({msg: err.message, err:errordb}); }
     res.status(200).send('A verification email has been sent to ' + email + '.');
@@ -151,14 +149,14 @@ app.post('/confirmation/:token', async(req,res,next) =>
 {
   var error=''
   let db = client.db();
-  const tokenCheck = await db.collection('User').find({token:req.params.token}).toArray();
+  const tokenCheck = await db.collection('User').find({token:req.params.token}).toArray()
 
   // account verification
   if (tokenCheck.length > 0 && tokenCheck[0].isVerified == "false")
   {
     let db = client.db()
-    db.collection('User').updateOne({token:req.params.token},{ $set : {isVerified:"true", token:""} },);
-    db.collection('User').updateOne({username:process.env.USER}, {$push: {"usersArray": {$each: [tokenCheck[0].email]}}});
+    await db.collection('User').updateOne({token:req.params.token},{ $set : {isVerified:"true", token:""} },)
+    await db.collection('User').updateOne({username:process.env.USER}, {$push: {"usersArray": {$each: [tokenCheck[0].email]}}})
   }
   else
     error = 'User with that token was not found || User has already been verified.'
@@ -203,10 +201,7 @@ app.post('/api/login', async (req, res, next) =>
       recovery = results[0].recoveryMode;
 
       var token = jwt.sign({id:results[0]._id}, process.env.SECRET, { expiresIn: '30m' });
-      // log time here
-      // update token time here
-      // log time of token
-      // if token expired, err.message = 'jwt expired'. so set err = err.message
+
       jwt.verify(token, process.env.SECRET, function(err, decoded)
       {
         // if there is no error validating the token
@@ -214,8 +209,6 @@ app.post('/api/login', async (req, res, next) =>
         {
           error = err.message;
         }
-        // prints out expiration time in seconds since unix epoch
-        console.log(decoded.exp);
       })
      }
     
@@ -235,8 +228,6 @@ app.post('/api/login', async (req, res, next) =>
     
   var ret = {username:uname,email:email,firstName:fn,lastName:ln,id:id,error:error,jwt:token,recovery:recovery};
   res.status(200).json(ret); 
-  // set session cookie for logout / activity
-  // var ret = {userId:id, firstName:fn, lastName:ln, error:error};
 })
 
 // token validation => new token with expiration set to 30m
@@ -409,7 +400,7 @@ app.post('/api/forgot', async(req, res, next) =>
     const passRand = crypto.randomBytes(8).toString('hex')
 
     var {salt, passwordHash} = sha512(passRand, results[0].salt);
-    db.collection('User').updateOne({"email":email},{ $set : {"recoveryMode":"true", "password":passwordHash} },)
+    await db.collection('User').updateOne({"email":email},{ $set : {"recoveryMode":"true", "password":passwordHash} },)
 
     var transporter = nodemailer.createTransport({ service: 'Sendgrid', auth: { user: process.env.SENDGRID_USERNAME, pass: process.env.SENDGRID_PASSWORD } });
     var mailOptions = { from: 'michael.yeah@pm.me', to: email, subject: 'Password Reset', text: 'Hello ' + results[0].username + ',\n\n' + 'Use this temporary password to login, make sure to change your password via Account Settings once logged in: ' + passRand + '\n' };
@@ -483,11 +474,6 @@ app.post('/api/updateAccount', async(req, res, next) =>
 
 // takes in a username to return the master date array, the users stock array, and the users value array
 app.post('/api/getData', async (req, res, next) => {
-
-  // returns:
-  // master  datesArray
-  // user    stockArray
-  // user    valueArray
 
   const {username} = req.body
   var error = ''
