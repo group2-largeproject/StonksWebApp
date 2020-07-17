@@ -9,41 +9,95 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Grid from '@material-ui/core/Grid';
 
+const BASE_URL = 'https://cop4331-large-group2.herokuapp.com/';
 
-// Generate Order Data
-function createData(id, symbol, dailyquote, dailychange, dateupdated, profitsinceadded) {
-  return { id, symbol, dailyquote, dailychange, dateupdated, profitsinceadded };
-}
+/*
+const [showMore, setShowMore] = React.useState(true)
+{ showMore ? <ListSubheader>Account</ListSubheader> : null }
+*/
 
-const rows = [
-  createData(1,'ABC', 10, -5, '01/20/2020', 312.44),
-  createData(3,'ABC', 10, -5, '01/20/2020', 312.44),
-  createData(2,'ABC', 10, -5, '01/20/2020', 312.44),
-  createData(4,'ABC', 10, -5, '01/20/2020', 312.44),
-  createData(5,'ABC', 10, -5, '01/20/2020', 312.44),
-  createData(6,'ABC', 10, -5, '01/20/2020', 312.44),
-  createData(7,'ABC', 10, -5, '01/20/2020', 312.44),
-  createData(8,'ABC', 10, -5, '01/20/2020', 312.44),
-  createData(9,'ABC', 10, -5, '01/20/2020', 312.44),
-  createData(10,'ABC', 10, -5, '01/20/2020', 312.44),
-];
+  function preventDefault(event) {
+    event.preventDefault();
+  }
 
-function preventDefault(event) {
-  event.preventDefault();
-}
-
-const useStyles = makeStyles((theme) => ({
+  const useStyles = makeStyles((theme) => ({
   seeMore: {
     marginTop: theme.spacing(3),
   },
   title: {
     float: 'right',
   }
-}));
+  }));
 
 export default function StockTable() {
   const classes = useStyles();
   const date = new Date();
+  function createData(id, symbol, dailyquote, dailychange, profitsinceadded) {
+    return { id, symbol, dailyquote, dailychange, profitsinceadded };
+  }
+  
+  var _ud = localStorage.getItem('user_data');
+  var ud = JSON.parse(_ud);
+  if(ud != null){
+    var tableUsername = ud.username;
+    /*var tableEmail = ud.email;
+    var tableName = ud.fname + ' ' + ud.lname;
+    var tableFN = ud.fname;
+    var tableLN = ud.lname;*/
+  }
+
+  const doGetTableData = async event => 
+    {
+      event.preventDefault();     
+      if(false){}
+      else{
+        var js = 
+        '{"username":"' + tableUsername 
+        +'"}';
+
+        try
+        {    
+            const response = await fetch(BASE_URL + 'api/getData',
+            {
+              method:'POST',
+              body:js,
+              headers:
+              {
+                'Content-Type': 'application/json'
+              }
+            }
+            );
+
+            var res = JSON.parse(await response.text());
+
+            if( res.error !=  '' )
+            {
+                alert(res.error);
+            }
+            else
+            {
+              alert('success');
+            }
+        }
+        catch(e)
+        {
+            alert(e.toString());
+            return;
+        }
+      }
+    }  
+  const rows = [
+    createData(1,'ABC', 10, -5, '01/20/2020', 312.44),
+    createData(3,'ABC', 10, -5, '01/20/2020', 312.44),
+    createData(2,'ABC', 10, -5, '01/20/2020', 312.44),
+    createData(4,'ABC', 10, -5, '01/20/2020', 312.44),
+    createData(5,'ABC', 10, -5, '01/20/2020', 312.44),
+    createData(6,'ABC', 10, -5, '01/20/2020', 312.44),
+    createData(7,'ABC', 10, -5, '01/20/2020', 312.44),
+    createData(8,'ABC', 10, -5, '01/20/2020', 312.44),
+    createData(9,'ABC', 10, -5, '01/20/2020', 312.44),
+    createData(10,'ABC', 10, -5, '01/20/2020', 312.44),
+  ];
   return (
     <React.Fragment>
       <Grid container justify="center" display="flex" direction="row" alignItems="flex-start" spacing={3}>

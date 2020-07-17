@@ -91,17 +91,17 @@ export default function Login() {
             else if( res.recovery ==  'true' )
             {
                 setMessage('Reroute to recovery');
-                /*window.location.href = '/Recovery'; */
+                window.location.href = '/ResetPassword';
             }
             else
             {
-                var user = {username:res.username,email:res.email,id:res.id,fname:res.firstName,lname:res.lastName}
+                var user = {username:res.username,email:res.email,fname:res.firstName,lname:res.lastName}
                 var session = {token:res.jwt}
                 localStorage.setItem('user_data', JSON.stringify(user));
                 localStorage.setItem('session_token', JSON.stringify(session));
 
                 setMessage('Login Successful');
-                /*window.location.href = '/Dashboard';*/
+                window.location.href = '/Dashboard';
             }
         }
         catch(e)

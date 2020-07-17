@@ -16,6 +16,7 @@ import { MenuList } from '@material-ui/core';
 import AccountSettings from '../components/accountsettings';
 import logo from '../media/StonksMainLogo.png';
 import ListSubheader from '@material-ui/core/ListSubheader';
+import isAuthenticated from '../components/authCheck';
 
 const drawerWidth = 240;
 
@@ -104,7 +105,7 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-export default function ProfilePage() {
+export default function AccountSettingsPage() {
   const classes = useStyles();
   const [open, setOpen] = React.useState(true);
   const [showAccount, setShowAccount] = React.useState(true)
@@ -117,6 +118,7 @@ export default function ProfilePage() {
     setShowAccount(false);
   };
   //const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
+  isAuthenticated();
 
   return (
     <div className={classes.root}>

@@ -63,8 +63,6 @@ export default function AccountSettings(){
     mobileNot: true,
   });*/
   const [state , setState] = useState({
-    newUsername : profileUsername,
-    newEmail : profileEmail,
     newFN : profileFN,
     newLN : profileLN
   })
@@ -80,18 +78,11 @@ export default function AccountSettings(){
   }
 
   const [message,setMessage] = useState('');
-
+  profileUsername = 'frontendtest';
+  profileEmail = 'localtoherokuapitest@fakeemail2323.com';
   const doUpdateAccount = async event => 
     {
       event.preventDefault();     
-      if( state.newUsername == ''){
-        state.newUsername = profileUsername
-        return;
-      }
-      if( state.newEmail == ''){
-        state.newEmail = profileUsername
-        return;
-      }
       if( state.newFN == ''){
         state.newFN = profileFN
         return;
@@ -102,8 +93,8 @@ export default function AccountSettings(){
       }
       else{
         var js = 
-        '{"username":"' + state.newUsername +
-        '","email":"' + state.newEmail +
+        '{"username":"' + profileUsername +
+        '","email":"' + profileEmail +
         '","firstName":"' + state.newFN +
         '","lastName":"' + state.newLN +
         '","id":"' + profileId
@@ -130,12 +121,14 @@ export default function AccountSettings(){
             }
             else
             {
-                /*update local storage
-                var user = {username:res.username,email:res.email,id:res.id,fname:res.firstName,lname:res.lastName}
-                localStorage.setItem('user_data', JSON.stringify(user));*/
+                //update local storage
+                profileFN = state.newFN;
+                profileLN = state.newLN;
+                var user = {username:profileUsername,email:profileEmail,id:profileId,fname:profileFN,lname:profileLN}
+                localStorage.setItem('user_data', JSON.stringify(user));
 
                 setMessage('Update Successful');
-                /*window.location.href = '/Profile';*/
+                window.location.href = '/Profile';
             }
         }
         catch(e)
@@ -153,7 +146,7 @@ export default function AccountSettings(){
                <Avatar className={classes.avatar}><SettingsIcon/></Avatar>
                <br/>
                <Typography component="h1" variant="h4">Account Settings:</Typography>
-               <TextField 
+               {/*<TextField 
                display="inline" 
                variant="outlined"
               label="Username"
@@ -177,7 +170,7 @@ export default function AccountSettings(){
               value = {state.newEmail}
               onChange={handleChange}
                />
-               <br/>
+               <br/>*/}
                <TextField 
                display="inline"
                variant="outlined"

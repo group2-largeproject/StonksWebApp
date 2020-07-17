@@ -45,7 +45,6 @@ export default function Profile(){
   if(ud != null){
     var profileUsername = ud.username;
     var profileEmail = ud.email;
-    var profileId = ud.id;
     var profileName = ud.fname + ' ' + ud.lname;
     var profileFN = ud.fname;
     var profileLN = ud.lname;
@@ -70,17 +69,14 @@ function DeleteFakeUser(){
                <Typography display="inline" color ="primary" component="h1" variant="h6">Name: </Typography>
                <Typography display="inline" component="h1" variant="h6">{profileName}</Typography>
                <br/>
-               <Typography display="inline" color ="primary" component="h1" variant="h6">User ID: </Typography>
-               <Typography display="inline" component="h1" variant="h6">{profileId}</Typography>
-               <br/>
                </Paper>
              </Grid>
              <Grid item lg={12}>
                <Button color="primary" href="/AccountSettings">
                  Account Settings
                </Button>
-               <Button size="small" onClick = {CreateFakeUser}>CreateFakeUser</Button>
-              <Button size="small" onClick = {DeleteFakeUser}>DeleteFakeUser</Button>
+               {/*<Button size="small" onClick = {CreateFakeUser}>CreateFakeUser</Button>
+              <Button size="small" onClick = {DeleteFakeUser}>DeleteFakeUser</Button>*/}
              </Grid>
            </Grid>
          </div>

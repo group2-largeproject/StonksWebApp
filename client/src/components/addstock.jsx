@@ -53,9 +53,15 @@ export default function AddStock(){
   const doStockAdd = async event => 
     {
         event.preventDefault();
-        
+        var _ud = localStorage.getItem('user_data');
+        var ud = JSON.parse(_ud);
+        if(ud != null){
+          var stockUsername = ud.username;
+        }
         var js = 
-        '{"stock":"' + state.stockSymbol + '"}';
+        '{"stock":"' + state.stockSymbol +
+        '","username":"' + stockUsername 
+        + '"}';
 
         try
         {    
