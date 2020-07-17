@@ -50,7 +50,7 @@ export default function SignOut(){
 
                 if( res.error !=  '' )
                 {
-                    setMessage(res.error);
+                    alert(res.error);
                 }
                 else
                 {
@@ -59,7 +59,7 @@ export default function SignOut(){
                     localStorage.removeItem('session_token');
                     localStorage.setItem('session_token', JSON.stringify(session));
 
-                    setMessage('Logout Successful');
+                    alert('Logout Successful');
                     window.location.href = '/';
                 }
             }
