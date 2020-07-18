@@ -9,11 +9,12 @@ export default function isAuthenticated(){
     }
     else{
         var validateToken = '';
+        window.location.href = "/";
     }
 
-    const doLogin = async event =>
+    const doValidate = async event =>
     {
-      var js = 
+        var js = 
       '{"token":"' + validateToken  
       +'"}';
 
@@ -34,7 +35,7 @@ export default function isAuthenticated(){
 
           if( res.error !=  '' )
           {
-              alert('Session Invalid!');
+              alert('Session Invalid Please Log In!');
               window.location.href = '/'
           }
           else if( res.jwt == '' )
@@ -45,10 +46,8 @@ export default function isAuthenticated(){
           else
           {
               var newSession = {token:res.jwt}
+              localStorage.removeItem('session_token');
               localStorage.setItem('session_token', JSON.stringify(newSession));
-            
-              alert('Page Validation Successful!');
-              return;
           }
       }
       catch(e)
@@ -57,21 +56,6 @@ export default function isAuthenticated(){
           return;
       }
     }
-    //Testing Start
-    var _ud = localStorage.getItem('user_data');
-    var ud = JSON.parse(_ud);
-    if(ud != null){
-        var profileUsername = ud.username;
-        var profileID = ud.id;
-        var profileEmail = ud.email;
-        var profileName = ud.fname + ' ' + ud.lname;
-        var profileFN = ud.fname;
-        var profileLN = ud.lname;
-    }
-    if(profileID == 123){
-        return;
-    }
-    else{//Testing End
-        doLogin(); 
-    }// <-- Remove after test
+    doValidate();
+    return;
 }

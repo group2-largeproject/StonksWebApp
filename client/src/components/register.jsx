@@ -10,6 +10,7 @@ import LockOpenIcon from '@material-ui/icons/LockOpen';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
+import validateEmail from '../components/emailvalidation';
 
 const BASE_URL = 'https://cop4331-large-group2.herokuapp.com/';
 
@@ -67,6 +68,9 @@ export default function Register() {
       else if( state.registerPassword != state.registerConfirmPassword ){
         setMessage('Passwords do not match!');
       }
+      else if(!validateEmail(state.registerEmail)){
+        setMessage('Please enter a valid email address!')
+      }
       else{
         var js = 
         '{"username":"' + state.registerUsername + 
@@ -88,7 +92,10 @@ export default function Register() {
               }
             }
             );
-            if(response.status != ''){ //temp for testing, probably should find a better way to handle errors between front/backends
+            if(response.status == 200){
+              setMessage("An email has been sent to " + state.registerEmail + " for verification! Check your spam folder!")
+            }
+            else{ 
               setMessage(response.statusText)
             }
             

@@ -2,6 +2,10 @@ import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Title from './title';
+import { useEffect } from 'react';
+import { useState } from 'react';
+
+const BASE_URL = 'https://cop4331-large-group2.herokuapp.com/';
 
 const useStyles = makeStyles((theme) => ({
   depositContext: {
@@ -20,9 +24,77 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
+function addCommas(x) {
+  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
 export default function PortfolioValue() {
   const classes = useStyles();
   var date = new Date();
+
+  const [portfolioValue , setValue] = useState();
+
+  useEffect(()=> {
+    var _ud = localStorage.getItem('user_data');
+    var ud = JSON.parse(_ud);
+  
+    if(ud != null){
+      var valueUsername = ud.username;
+    }
+    //valueUsername = "admin";//REMOVE AFTER TESTING
+    const doGetPortfolioValue = async event => 
+      {    
+        if(false){}
+        else{
+          var js = 
+          '{"username":"' + valueUsername 
+          +'"}';
+  
+          try
+          {    
+              const response = await fetch(BASE_URL + 'api/getData',
+              {
+                method:'POST',
+                body:js,
+                headers:
+                {
+                  'Content-Type': 'application/json'
+                }
+              }
+              );
+  
+              var res = JSON.parse(await response.text());
+  
+              if( res.error !=  '' )
+              {
+                  alert(res.error);
+              }
+              else if( res == null ){
+                alert('No data to display!!')
+              }
+              else
+              {
+                var value = 0;
+                var i = 0;
+                while(res.values[i]==null){
+                  i++
+                }
+                value = res.values[i];
+                var valueWithCommas = addCommas(value);
+                setValue(valueWithCommas);          
+                return;
+              }
+          }
+          catch(e)
+          {
+              alert(e.toString());
+              return;
+          }
+        }
+      }
+      doGetPortfolioValue();
+  }, []); 
+
   return (
     <React.Fragment>
       {/*<Avatar className={classes.avatar}>
@@ -30,7 +102,7 @@ export default function PortfolioValue() {
       </Avatar>*/}
       <Title className={classes.title}>Portfolio Value:</Title>
       <Typography className={classes.spacer} component="p" variant="h4">
-        $3,024.00
+        ${portfolioValue}
       </Typography>
       <Typography color="textSecondary" className={classes.depositContext}>
         As Of {date.getMonth()}/{date.getDate()}/{date.getFullYear()}

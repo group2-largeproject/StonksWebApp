@@ -78,8 +78,6 @@ export default function AccountSettings(){
   }
 
   const [message,setMessage] = useState('');
-  profileUsername = 'frontendtest';
-  profileEmail = 'localtoherokuapitest@fakeemail2323.com';
   const doUpdateAccount = async event => 
     {
       event.preventDefault();     

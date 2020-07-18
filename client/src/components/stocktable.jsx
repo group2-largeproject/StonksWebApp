@@ -1,4 +1,5 @@
 import React from 'react';
+import {useState, useEffect} from 'react';
 import Link from '@material-ui/core/Link';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
@@ -14,6 +15,9 @@ const BASE_URL = 'https://cop4331-large-group2.herokuapp.com/';
 /*
 const [showMore, setShowMore] = React.useState(true)
 { showMore ? <ListSubheader>Account</ListSubheader> : null }
+
+rows doesnt exist? fix error, commented out code so site still functions
+
 */
 
   function preventDefault(event) {
@@ -28,76 +32,96 @@ const [showMore, setShowMore] = React.useState(true)
     float: 'right',
   }
   }));
-
+  function createData(id, quantity, symbol, dailyquote, dailychange, dateupdated, profitsinceadded) {
+    return { id, symbol, dailyquote};
+  }
+  
+  const rows = [
+    createData(1, 300,'ABC', 10, -5, '01/20/2020', 312.44),
+    createData(2, 300,'ABC', 10, -5, '01/20/2020', 312.44),
+    createData(3, 300,'ABC', 10, -5, '01/20/2020', 312.44),
+    createData(4, 300,'ABC', 10, -5, '01/20/2020', 312.44),
+    createData(5, 300,'ABC', 10, -5, '01/20/2020', 312.44),
+    createData(6, 300,'ABC', 10, -5, '01/20/2020', 312.44),
+    createData(7, 300,'ABC', 10, -5, '01/20/2020', 312.44),
+    createData(8, 300,'ABC', 10, -5, '01/20/2020', 312.44),
+    createData(9, 300,'ABC', 10, -5, '01/20/2020', 312.44),
+    createData(10, 300,'ABC', 10, -5, '01/20/2020', 312.44),
+  ];
+  
 export default function StockTable() {
   const classes = useStyles();
   const date = new Date();
-  function createData(id, symbol, dailyquote, dailychange, profitsinceadded) {
-    return { id, symbol, dailyquote, dailychange, profitsinceadded };
-  }
+  /*const [rows , setRows] = useState();
+
+  const rowsTemp = [
+    { "id":1, "symbol":"ABC", "dailyquote": 0},
+    { "id":2, "symbol":"ABC", "dailyquote": 0},
+    { "id":3, "symbol":"ABC", "dailyquote": 0},
+    { "id":4, "symbol":"ABC", "dailyquote": 0},
+  ];
+
+  setRows(rowsTemp);
+
+
+  useEffect(()=> {
+    var _ud = localStorage.getItem('user_data');
+    var ud = JSON.parse(_ud);
+
+    if(ud != null){
+      var tableUsername = ud.username;
+    }
+    tableUsername = "admin";//REMOVE AFTER TESTING
+    const doGetTableData = async event => 
+      {    
+        if(false){}
+        else{
+          var js = 
+          '{"username":"' + tableUsername 
+          +'"}';
   
-  var _ud = localStorage.getItem('user_data');
-  var ud = JSON.parse(_ud);
-  if(ud != null){
-    var tableUsername = ud.username;
-    /*var tableEmail = ud.email;
-    var tableName = ud.fname + ' ' + ud.lname;
-    var tableFN = ud.fname;
-    var tableLN = ud.lname;*/
-  }
-
-  const doGetTableData = async event => 
-    {
-      event.preventDefault();     
-      if(false){}
-      else{
-        var js = 
-        '{"username":"' + tableUsername 
-        +'"}';
-
-        try
-        {    
-            const response = await fetch(BASE_URL + 'api/getData',
-            {
-              method:'POST',
-              body:js,
-              headers:
+          try
+          {    
+              const response = await fetch(BASE_URL + 'api/getData',
               {
-                'Content-Type': 'application/json'
+                method:'POST',
+                body:js,
+                headers:
+                {
+                  'Content-Type': 'application/json'
+                }
               }
-            }
-            );
-
-            var res = JSON.parse(await response.text());
-
-            if( res.error !=  '' )
-            {
-                alert(res.error);
-            }
-            else
-            {
-              alert('success');
-            }
-        }
-        catch(e)
-        {
-            alert(e.toString());
-            return;
+              );
+  
+              var res = JSON.parse(await response.text());
+  
+              if( res.error !=  '' )
+              {
+                  alert(res.error);
+              }
+              else if( res == null ){
+                alert('No data to display!!')
+              }
+              else
+              {
+                const rows = [];
+                for(var i=0;i<res.stocks.length;i++){
+                  rows[i] = { "id":i, "symbol":res.stocks[i], "dailyquote": "0"}
+                }
+                console.log(rows);
+                setRows(rows);          
+                return;
+              }
+          }
+          catch(e)
+          {
+              alert(e.toString());
+              return;
+          }
         }
       }
-    }  
-  const rows = [
-    createData(1,'ABC', 10, -5, '01/20/2020', 312.44),
-    createData(3,'ABC', 10, -5, '01/20/2020', 312.44),
-    createData(2,'ABC', 10, -5, '01/20/2020', 312.44),
-    createData(4,'ABC', 10, -5, '01/20/2020', 312.44),
-    createData(5,'ABC', 10, -5, '01/20/2020', 312.44),
-    createData(6,'ABC', 10, -5, '01/20/2020', 312.44),
-    createData(7,'ABC', 10, -5, '01/20/2020', 312.44),
-    createData(8,'ABC', 10, -5, '01/20/2020', 312.44),
-    createData(9,'ABC', 10, -5, '01/20/2020', 312.44),
-    createData(10,'ABC', 10, -5, '01/20/2020', 312.44),
-  ];
+      doGetTableData();
+  }, []);*/  
   return (
     <React.Fragment>
       <Grid container justify="center" display="flex" direction="row" alignItems="flex-start" spacing={3}>
@@ -111,7 +135,7 @@ export default function StockTable() {
       {/*spacer*/}
       </Grid>
       <Grid justify="flex-end" item lg={3}>
-      <Typography display="inline" align="right" component="h2" variant="h6">{date.getMonth()}/{date.getDate()}/{date.getFullYear()}</Typography>
+      <Typography display="inline" align="right" component="h2" variant="h6">As of: {date.getMonth()}/{date.getDate()}/{date.getFullYear()}</Typography>
       </Grid>
       <br/>
       </Grid>
@@ -120,30 +144,24 @@ export default function StockTable() {
           <TableRow>
             <TableCell>Row</TableCell>
             <TableCell>Symbol</TableCell>
-            <TableCell>Daily Quote</TableCell>
-            <TableCell>Daily Change</TableCell>
-            <TableCell>Date Updated</TableCell>
-            <TableCell align="right">Profit Since Added</TableCell>
+            <TableCell align="right">Daily Quote</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((row) => (
+        {rows.map((row) => (
             <TableRow key={row.id}>
               <TableCell>{row.id}</TableCell>
               <TableCell>{row.symbol}</TableCell>
-              <TableCell>{row.dailyquote}</TableCell>
-              <TableCell>{row.dailychange}</TableCell>
-              <TableCell>{row.dateupdated}</TableCell>
-              <TableCell align="right">{row.profitsinceadded}</TableCell>
+              <TableCell align="right">{row.dailyquote}</TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-      <div className={classes.seeMore}>
+      {/*<div className={classes.seeMore}>
         <Link color="primary" href="#" onClick={preventDefault}>
           More
         </Link>
-      </div>
+      </div>*/}
     </React.Fragment>
   );
 }
