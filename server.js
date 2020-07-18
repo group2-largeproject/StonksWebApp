@@ -132,7 +132,7 @@ app.post('/register', async (req, res, next) =>
     // why
     var transporter = nodemailer.createTransport({ service: 'Sendgrid', auth: { user: process.env.SENDGRID_USERNAME, pass: process.env.SENDGRID_PASSWORD } })
     var mailOptions = { from: 'michael.yeah@pm.me', to: email, subject: 'Account Verification Token', text: 'Hello ' + username + ',\n\n' + 
-    'Please verify your account by copying this token: ' + token + ' and submitting it at this link: ' + process.env.BASE_URL + 'confirmation\/' + '\n' }
+    'Please verify your account by copying this token: ' + token + ' and submitting it at this link: ' + process.env.BASE_URL + 'emailconfirmation\/' + '\n' }
   }
   catch(e)
   {
@@ -145,7 +145,7 @@ app.post('/register', async (req, res, next) =>
   })
 
 })
-app.post('/confirmation/', async(req,res,next) =>
+app.post('/api/confirmation/', async(req,res,next) =>
 {
   var error = ''
   const { verToken } = req.body
@@ -377,7 +377,7 @@ app.post('/api/deleteStock', async (req, res, next) =>
   if (results.length <= 0) 
     error = "User not found."
   else
-    await db.collection('User').updateOne({username:username}, {$pull: {'stockArray':stock}})
+    await db.collection('User').updateOne({username:username}, {$pull: {'stockArray':stock.toLower()}})
   
     // await db.collection('User').updateOne({"username":username},{ $push : {"stockArray":  {$each: [stock], $position: 0}} },);
 
