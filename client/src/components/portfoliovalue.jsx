@@ -70,16 +70,16 @@ export default function PortfolioValue() {
                   alert(res.error);
               }
               else if( res == null ){
-                alert('No data to display!!')
+                setValue('Error!')
               }
               else
               {
                 var value = 0;
-                var i = 0;
+                /*var i = 0;
                 while(res.values[i]==null){
                   i++
-                }
-                value = res.values[i];
+                }*/
+                value = res.values[4];
                 var valueWithCommas = addCommas(value);
                 setValue(valueWithCommas);          
                 return;
@@ -105,7 +105,7 @@ export default function PortfolioValue() {
         ${portfolioValue}
       </Typography>
       <Typography color="textSecondary" className={classes.depositContext}>
-        As Of {date.getMonth()}/{date.getDate()}/{date.getFullYear()}
+        As Of {date.getMonth()+1}/{date.getDate()}/{date.getFullYear()}
       </Typography>
       <div>
       </div>

@@ -9,7 +9,9 @@ export default function isAuthenticated(){
     }
     else{
         var validateToken = '';
+        alert('Session Invalid Please Log In!');
         window.location.href = "/";
+        return;
     }
 
     const doValidate = async event =>
@@ -36,18 +38,23 @@ export default function isAuthenticated(){
           if( res.error !=  '' )
           {
               alert('Session Invalid Please Log In!');
+              localStorage.removeItem('session_token');
               window.location.href = '/'
+              return;
           }
           else if( res.jwt == '' )
           {
               alert('Token Response Error!')
+              localStorage.removeItem('session_token');
               window.location.href = '/'
+              return;
           }
           else
           {
               var newSession = {token:res.jwt}
               localStorage.removeItem('session_token');
               localStorage.setItem('session_token', JSON.stringify(newSession));
+              return;
           }
       }
       catch(e)

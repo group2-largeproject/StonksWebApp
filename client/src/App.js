@@ -8,9 +8,10 @@ import RegisterPage         from './pages/registerPage';
 import Dashboard            from './pages/dashboardPage';
 import ForgotPage           from './pages/forgotPage';
 import ProfilePage          from './pages/profilePage';
-import AddStockPage         from './pages/addstockPage';
+import ManageStocksPage         from './pages/managestocksPage';
 import AccountSettingsPage  from './pages/accountsettingsPage';
 import PasswordResetPage    from './pages/passwordresetPage';
+import EmailConfirmationPage from './pages/emailconfirmationPage';
 import Footer               from './components/footer';
 
 //Auth
@@ -46,9 +47,10 @@ function App() {
           <Route path="/ForgotPassword" exact component={ ForgotPage }/>
           <Route path="/Dashboard" exact component={ Dashboard }/>
           <Route path="/Profile" exact component={ ProfilePage }/>
-          <Route path="/AddStock" exact component={ AddStockPage }/> 
+          <Route path="/ManageStocks" exact component={ ManageStocksPage }/> 
           <Route path="/AccountSettings" exact component={ AccountSettingsPage }/>
-          <Route path="/ResetPassword" exact component={ PasswordResetPage }/>                  
+          <Route path="/ResetPassword" exact component={ PasswordResetPage }/> 
+          <Route path="/EmailConfirmation" exact component={ EmailConfirmationPage }/>                  
           <Redirect to="/" />      
         </Switch>   
       </Router>

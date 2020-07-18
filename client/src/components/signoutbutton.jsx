@@ -73,7 +73,8 @@ export default function SignOut(){
       } 
 
     return(
-        <ListItem button >
+        
+        <ListItem button onClick= {doLogout}>
             <ListItemIcon>
                 <ExitToApp />
             </ListItemIcon>

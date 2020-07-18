@@ -16,6 +16,7 @@ import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import { mainListItems, secondaryListItems } from '../components/listItems';
 import { MenuList } from '@material-ui/core';
 import AddStock from '../components/addstock';
+import RemoveStock from '../components/removestock';
 import StockTable from '../components/stocktable';
 import logo from '../media/StonksMainLogo.png';
 import ListSubheader from '@material-ui/core/ListSubheader';
@@ -108,7 +109,7 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-export default function ProfilePage() {
+export default function ManageStocksPage() {
   const classes = useStyles();
   const [open, setOpen] = React.useState(true);
   const [showAccount, setShowAccount] = React.useState(true)
@@ -189,6 +190,7 @@ export default function ProfilePage() {
             <Grid item xs={12} md={4} lg={3}>
               <Paper className={classes.paper}>
                 <AddStock />
+                {/*<RemoveStock />*/}
               </Paper>
             </Grid>
           </Grid>
