@@ -43,7 +43,7 @@ export const mainListItems = (
     </NavLink>
     <NavLink
     exact
-    to = "/AddStock"
+    to = "/ManageStocks"
     className = "nav-link"
     activeClassName = "nav-link-active"
     >
@@ -51,7 +51,7 @@ export const mainListItems = (
       <ListItemIcon>
         <AddBoxIcon />
       </ListItemIcon>
-      <ListItemText primary="Add Stock" />
+      <ListItemText primary="Manage Stocks" />
     </ListItem>
     </NavLink>
   </div>

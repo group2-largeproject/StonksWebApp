@@ -31,15 +31,10 @@ const useStyles = makeStyles((theme) => ({
   },
   submit: {
     margin: theme.spacing(1, 0, 1),
-    marginRight: theme.spacing(0.25),
-  },
-  submitL: {
-    margin: theme.spacing(1, 0, 1),
-    marginLeft: theme.spacing(0.25),
   },
 }));
 
-export default function AddStock(){
+export default function RemoveStock(){
   const classes = useStyles();
 
   const [state , setState] = useState({
@@ -99,51 +94,6 @@ export default function AddStock(){
             return;
         } 
     };
-
-  const doStockAdd = async event => 
-    {
-        event.preventDefault();
-        var _ud = localStorage.getItem('user_data');
-        var ud = JSON.parse(_ud);
-        if(ud != null){
-          var stockUsername = ud.username;
-        }
-        var js = 
-        '{"stock":"' + state.stockSymbol.toUpperCase() +
-        '","username":"' + stockUsername 
-        + '"}';
-
-        try
-        {    
-            const response = await fetch(BASE_URL + 'api/addStock',
-            {
-              method:'POST',
-              body:js,
-              headers:
-              {
-                'Content-Type': 'application/json'
-              }
-            }
-            );
-
-            var res = JSON.parse(await response.text());
-
-
-            if( res.error != '' )
-            {
-                setMessage(res.error);
-            }
-            else{
-              setMessage('Stock added successfully!')
-              window.location.reload();
-            }
-        }
-        catch(e)
-        {
-            alert(e.toString());
-            return;
-        } 
-    };
   
   return (
       <div className={classes.root}>
@@ -155,7 +105,7 @@ export default function AddStock(){
             <TimelineIcon/>
           </Avatar>
           <Typography component="h1" variant="h5">
-            Add/Remove
+            Add a Stock
           </Typography>
           <form className={classes.form} noValidate>
               <Grid item xs={12}>
@@ -174,34 +124,18 @@ export default function AddStock(){
                 />    
             </Grid>
             <Grid item xs={12}>
-                <span id="stockAddResult">{message}</span>
+                <span id="stockRemoveResult">{message}</span>
               </Grid>
-            <Grid container justify= "center">
-            <Grid item xs={6}>
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              onClick= {doStockAdd}
-              color="primary"
-              className={classes.submit}
-            >
-              Add
-            </Button>
-            </Grid>
-            <Grid item xs={6}>
             <Button
               type="submit"
               fullWidth
               variant="contained"
               onClick= {doStockRemove}
               color="primary"
-              className={classes.submitL}
+              className={classes.submit}
             >
-              Remove
+              Remove Stock
             </Button>
-            </Grid>
-            </Grid>
           </form>
         </div>
         {/*</Paper>*/} 

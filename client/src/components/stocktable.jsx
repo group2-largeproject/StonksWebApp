@@ -36,32 +36,26 @@ rows doesnt exist? fix error, commented out code so site still functions
     return { id, symbol, dailyquote};
   }
   
-  const rows = [
-    createData(1, 300,'ABC', 10, -5, '01/20/2020', 312.44),
-    createData(2, 300,'ABC', 10, -5, '01/20/2020', 312.44),
-    createData(3, 300,'ABC', 10, -5, '01/20/2020', 312.44),
-    createData(4, 300,'ABC', 10, -5, '01/20/2020', 312.44),
-    createData(5, 300,'ABC', 10, -5, '01/20/2020', 312.44),
-    createData(6, 300,'ABC', 10, -5, '01/20/2020', 312.44),
-    createData(7, 300,'ABC', 10, -5, '01/20/2020', 312.44),
-    createData(8, 300,'ABC', 10, -5, '01/20/2020', 312.44),
-    createData(9, 300,'ABC', 10, -5, '01/20/2020', 312.44),
-    createData(10, 300,'ABC', 10, -5, '01/20/2020', 312.44),
-  ];
+  /*const rows = [
+    { "id":1, "symbol":"ABC", "dailyquote": 0},
+    { "id":2, "symbol":"ABC", "dailyquote": 0},
+    { "id":3, "symbol":"ABC", "dailyquote": 0},
+    { "id":4, "symbol":"ABC", "dailyquote": 0},
+  ];*/
   
 export default function StockTable() {
   const classes = useStyles();
   const date = new Date();
-  /*const [rows , setRows] = useState();
+  const [rows , setRows] = useState([]);
 
-  const rowsTemp = [
+  /*const rowsTemp = [
     { "id":1, "symbol":"ABC", "dailyquote": 0},
     { "id":2, "symbol":"ABC", "dailyquote": 0},
     { "id":3, "symbol":"ABC", "dailyquote": 0},
     { "id":4, "symbol":"ABC", "dailyquote": 0},
   ];
 
-  setRows(rowsTemp);
+  setRows(rowsTemp);*/
 
 
   useEffect(()=> {
@@ -71,7 +65,7 @@ export default function StockTable() {
     if(ud != null){
       var tableUsername = ud.username;
     }
-    tableUsername = "admin";//REMOVE AFTER TESTING
+    //tableUsername = "admin";//REMOVE AFTER TESTING
     const doGetTableData = async event => 
       {    
         if(false){}
@@ -100,13 +94,18 @@ export default function StockTable() {
                   alert(res.error);
               }
               else if( res == null ){
-                alert('No data to display!!')
+                rows[0] = { "id":0, "symbol":"There was a problem fetching your stock data!", "dailyquote": ""}
+                setRows(rows);          
+                return;
               }
               else
               {
                 const rows = [];
+                if(res.stocks.length == 0){
+                  rows[0] = { "id":0, "symbol":"Looks like you don't have any stocks! Add some to begin tracking your porfolio!", "dailyquote": ""}
+                }
                 for(var i=0;i<res.stocks.length;i++){
-                  rows[i] = { "id":i, "symbol":res.stocks[i], "dailyquote": "0"}
+                  rows[i] = { "id":i, "symbol":res.stocks[i].toUpperCase(), "dailyquote": "0"}
                 }
                 console.log(rows);
                 setRows(rows);          
@@ -121,12 +120,12 @@ export default function StockTable() {
         }
       }
       doGetTableData();
-  }, []);*/  
+  }, []);
   return (
     <React.Fragment>
       <Grid container justify="center" display="flex" direction="row" alignItems="flex-start" spacing={3}>
       <Grid item lg={3}>
-      <Typography display="inline" align="left" component="h2" variant="h6" color="primary" gutterBottom>Performance</Typography>
+      <Typography display="inline" align="left" component="h2" variant="h6" color="primary" gutterBottom>Portfolio Contents</Typography>
       </Grid>
       <Grid item lg={3}>
       {/*spacer*/}
@@ -135,7 +134,7 @@ export default function StockTable() {
       {/*spacer*/}
       </Grid>
       <Grid justify="flex-end" item lg={3}>
-      <Typography display="inline" align="right" component="h2" variant="h6">As of: {date.getMonth()}/{date.getDate()}/{date.getFullYear()}</Typography>
+      <Typography display="inline" align="right" component="h2" variant="h6">As Of {date.getMonth()+1}/{date.getDate()}/{date.getFullYear()}</Typography>
       </Grid>
       <br/>
       </Grid>
@@ -144,7 +143,7 @@ export default function StockTable() {
           <TableRow>
             <TableCell>Row</TableCell>
             <TableCell>Symbol</TableCell>
-            <TableCell align="right">Daily Quote</TableCell>
+            {/*<TableCell align="right">Daily Quote</TableCell>*/}
           </TableRow>
         </TableHead>
         <TableBody>
@@ -152,7 +151,7 @@ export default function StockTable() {
             <TableRow key={row.id}>
               <TableCell>{row.id}</TableCell>
               <TableCell>{row.symbol}</TableCell>
-              <TableCell align="right">{row.dailyquote}</TableCell>
+              {/*<TableCell align="right">{row.dailyquote}</TableCell>*/}
             </TableRow>
           ))}
         </TableBody>
