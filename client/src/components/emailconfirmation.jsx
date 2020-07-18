@@ -60,7 +60,7 @@ export default function EmailConfirmation() {
       }
       else{
         var js = 
-        '{"token":"' + state.emailToken
+        '{"verToken":"' + state.emailToken
         +'"}';
 
         try
