@@ -145,7 +145,7 @@ app.post('/register', async (req, res, next) =>
   })
 
 })
-app.post('/api/confirmation/', async(req,res,next) =>
+app.post('/confirmation', async(req,res,next) =>
 {
   var error = ''
   const { verToken } = req.body
