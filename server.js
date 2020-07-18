@@ -377,7 +377,7 @@ app.post('/api/deleteStock', async (req, res, next) =>
   if (results.length <= 0) 
     error = "User not found."
   else
-    await db.collection('User').updateOne({username:username}, {$pull: {'stockArray':stock.toLower()}})
+    await db.collection('User').updateOne({username:username}, {$pull: {'stockArray':stock}})
   
     // await db.collection('User').updateOne({"username":username},{ $push : {"stockArray":  {$each: [stock], $position: 0}} },);
 
