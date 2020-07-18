@@ -129,9 +129,9 @@ app.post('/register', async (req, res, next) =>
 
     for (let i = 0; i < 5; i++)
       await db.collection('User').updateOne({email:email},{$push : {valueArray:0.0} })
-    
+    // why
     var transporter = nodemailer.createTransport({ service: 'Sendgrid', auth: { user: process.env.SENDGRID_USERNAME, pass: process.env.SENDGRID_PASSWORD } })
-    var mailOptions = { from: 'michael.yeah@pm.me', to: email, subject: 'Account Verification Token', text: 'Hello ' + firstName + ',\n\n' + 'Please verify your account by clicking this link: ' + process.env.BASE_URL + 'confirmation\/' + token + '\n' }
+    var mailOptions = { from: 'michael.yeah@pm.me', to: email, subject: 'Account Verification Token', text: 'Hello,\n\n' + 'Please verify your account by clicking the link: ' + process.env.BASE_URL + 'confirmation\/' + token + '\n' }
   }
   catch(e)
   {
