@@ -129,9 +129,10 @@ app.post('/register', async (req, res, next) =>
 
     for (let i = 0; i < 5; i++)
       await db.collection('User').updateOne({email:email},{$push : {valueArray:0.0} })
-    
+    // why
     var transporter = nodemailer.createTransport({ service: 'Sendgrid', auth: { user: process.env.SENDGRID_USERNAME, pass: process.env.SENDGRID_PASSWORD } })
-    var mailOptions = { from: 'michael.yeah@pm.me', to: email, subject: 'Account Verification Token', text: 'Hello ' + firstName + ',\n\n' + 'Please verify your account by clicking this link: ' + process.env.BASE_URL + 'confirmation\/' + token + '\n' }
+    var mailOptions = { from: 'michael.yeah@pm.me', to: email, subject: 'Account Verification Token', text: 'Hello ' + username + ',\n\n' + 
+    'Please verify your account by copying this token: ' + token + ' and submitting it at this link: ' + process.env.BASE_URL + 'confirmation\/' + '\n' }
   }
   catch(e)
   {
@@ -144,22 +145,22 @@ app.post('/register', async (req, res, next) =>
   })
 
 })
-
-app.post('/confirmation/:token', async(req,res,next) =>
+app.post('/confirmation/', async(req,res,next) =>
 {
-  var error=''
-  let db = client.db();
-  const tokenCheck = await db.collection('User').find({token:req.params.token}).toArray()
+  var error = ''
+  const { verToken } = req.body
+  let db = client.db()
+  const tokenCheck = await db.collection('User').find({token:verToken}).toArray()
 
   // account verification
   if (tokenCheck.length > 0 && tokenCheck[0].isVerified == "false")
   {
     let db = client.db()
-    await db.collection('User').updateOne({token:req.params.token},{ $set : {isVerified:"true", token:""} },)
+    await db.collection('User').updateOne({token:verToken},{ $set : {isVerified:"true", token:""} },)
     await db.collection('User').updateOne({username:process.env.USER}, {$push: {"usersArray": {$each: [tokenCheck[0].email]}}})
   }
   else
-    error = 'User with that token was not found || User has already been verified.'
+    error = 'User with that token was not found or has already been verified.'
 
   ret = {error:error}
   res.status(200).json(ret);

@@ -12,7 +12,7 @@ const masterUser = process.env.MASTERUSER
 
 const iex = new IEXCloudClient(fetch, {
     sandbox: true,
-    publishable: process.env.STONK_TOK,
+    publishable: process.env.PUBLISHABLE,
     version: "stable"
   })
 
