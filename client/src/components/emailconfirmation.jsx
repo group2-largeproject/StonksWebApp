@@ -65,7 +65,7 @@ export default function EmailConfirmation() {
 
         try
         {    
-            const response = await fetch(BASE_URL + 'api/confirmation',
+            const response = await fetch(BASE_URL + 'confirmation',
             {
               method:'POST',
               body:js,
