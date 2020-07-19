@@ -91,18 +91,10 @@ export default function ResetPassword() {
             {
                 setMessage(res.error);
             }
-            if( res.recoveryMode ==  'true' )
-            {
-                setMessage('Reroute to recovery');
-                /*window.location.href = '/Recovery'; */
-            }
             else
             {
-                /*var user = {username:res.username,email:res.email,id:res.id,fname:res.firstName,lname:res.lastName}
-                localStorage.setItem('user_data', JSON.stringify(user));*/
-
                 setMessage('Password Change Successful');
-                /*window.location.href = '/Dashboard';*/
+                window.location.href = '/Dashboard';
             }
         }
         catch(e)

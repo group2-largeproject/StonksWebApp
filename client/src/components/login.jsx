@@ -90,8 +90,13 @@ export default function Login() {
             }
             else if( res.recovery ==  'true' )
             {
-                setMessage('Reroute to recovery');
-                window.location.href = '/ResetPassword';
+              var user = {username:res.username,email:res.email,fname:res.firstName,lname:res.lastName}
+              var session = {token:res.jwt}
+              localStorage.setItem('user_data', JSON.stringify(user));
+              localStorage.setItem('session_token', JSON.stringify(session));
+              
+              setMessage('Reroute to recovery');
+              window.location.href = '/ResetPassword';
             }
             else
             {
