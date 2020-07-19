@@ -157,7 +157,7 @@ app.post('/confirmation', async(req,res,next) =>
   {
     let db = client.db()
     await db.collection('User').updateOne({token:verToken},{ $set : {isVerified:"true", token:""} },)
-    await db.collection('User').updateOne({username:process.env.USER}, {$push: {"usersArray": {$each: [tokenCheck[0].email]}}})
+    await db.collection('User').updateOne({username:process.env.MASTERUSER}, {$push: {"usersArray": {$each: [tokenCheck[0].email]}}})
   }
   else
     error = 'User with that token was not found or has already been verified.'
