@@ -8,7 +8,7 @@ export default function isAuthenticated(){
         var validateToken = session.token;
     }
     else{
-        var validateToken = '';
+        validateToken = '';
         alert('Session Invalid Please Log In!');
         window.location.href = "/";
         return;
@@ -37,14 +37,14 @@ export default function isAuthenticated(){
 
           if( res.error !=  '' )
           {
-              alert('Session Invalid Please Log In!');
+              //alert('Session Invalid Please Log In!');
               localStorage.removeItem('session_token');
               window.location.href = '/'
               return;
           }
           else if( res.jwt == '' )
           {
-              alert('Token Response Error!')
+              //alert('Token Response Error!')
               localStorage.removeItem('session_token');
               window.location.href = '/'
               return;
@@ -64,5 +64,5 @@ export default function isAuthenticated(){
       }
     }
     doValidate();
-    return;
+    return; 
 }

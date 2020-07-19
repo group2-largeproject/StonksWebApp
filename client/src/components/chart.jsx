@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { useTheme } from '@material-ui/core/styles';
 import { LineChart, Line, XAxis, YAxis, Label, ResponsiveContainer } from 'recharts';
 import Title from '../components/title';
-import { get } from 'request';
 import { useEffect } from 'react';
 
 

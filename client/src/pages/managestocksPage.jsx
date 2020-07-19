@@ -16,7 +16,6 @@ import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import { mainListItems, secondaryListItems } from '../components/listItems';
 import { MenuList } from '@material-ui/core';
 import AddStock from '../components/addstock';
-import RemoveStock from '../components/removestock';
 import StockTable from '../components/stocktable';
 import logo from '../media/StonksMainLogo.png';
 import ListSubheader from '@material-ui/core/ListSubheader';
