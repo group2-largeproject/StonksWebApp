@@ -8,7 +8,7 @@ export default function isAuthenticated(){
         var validateToken = session.token;
     }
     else{
-        var validateToken = '';
+        validateToken = '';
         alert('Session Invalid Please Log In!');
         window.location.href = "/";
         return;

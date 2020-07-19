@@ -1,6 +1,5 @@
 import React from 'react';
 import {useState, useEffect} from 'react';
-import Link from '@material-ui/core/Link';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
@@ -12,18 +11,6 @@ import Grid from '@material-ui/core/Grid';
 
 const BASE_URL = 'https://cop4331-large-group2.herokuapp.com/';
 
-/*
-const [showMore, setShowMore] = React.useState(true)
-{ showMore ? <ListSubheader>Account</ListSubheader> : null }
-
-rows doesnt exist? fix error, commented out code so site still functions
-
-*/
-
-  function preventDefault(event) {
-    event.preventDefault();
-  }
-
   const useStyles = makeStyles((theme) => ({
   seeMore: {
     marginTop: theme.spacing(3),
@@ -32,31 +19,11 @@ rows doesnt exist? fix error, commented out code so site still functions
     float: 'right',
   }
   }));
-  function createData(id, quantity, symbol, dailyquote, dailychange, dateupdated, profitsinceadded) {
-    return { id, symbol, dailyquote};
-  }
-  
-  /*const rows = [
-    { "id":1, "symbol":"ABC", "dailyquote": 0},
-    { "id":2, "symbol":"ABC", "dailyquote": 0},
-    { "id":3, "symbol":"ABC", "dailyquote": 0},
-    { "id":4, "symbol":"ABC", "dailyquote": 0},
-  ];*/
-  
+
 export default function StockTable() {
   const classes = useStyles();
   const date = new Date();
   const [rows , setRows] = useState([]);
-
-  /*const rowsTemp = [
-    { "id":1, "symbol":"ABC", "dailyquote": 0},
-    { "id":2, "symbol":"ABC", "dailyquote": 0},
-    { "id":3, "symbol":"ABC", "dailyquote": 0},
-    { "id":4, "symbol":"ABC", "dailyquote": 0},
-  ];
-
-  setRows(rowsTemp);*/
-
 
   useEffect(()=> {
     var _ud = localStorage.getItem('user_data');
@@ -65,7 +32,7 @@ export default function StockTable() {
     if(ud != null){
       var tableUsername = ud.username;
     }
-    //tableUsername = "admin";//REMOVE AFTER TESTING
+
     const doGetTableData = async event => 
       {    
         if(false){}
