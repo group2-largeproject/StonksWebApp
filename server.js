@@ -433,7 +433,7 @@ app.post('/api/reset', async (req, res, next) =>
   const results = await db.collection('User').find({email:email}).toArray()
 
   if (results.length > 0)
-    await client.db().collection('User').updateOne({email:email},{$set : {password:passwordHash, salt:salt} })
+    await client.db().collection('User').updateOne({email:email},{$set : {password:passwordHash, salt:salt, recoveryMode:"false"} })
   else
     newError = "User with that email address was not found."
 
