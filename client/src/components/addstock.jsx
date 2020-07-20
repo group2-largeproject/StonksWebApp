@@ -63,40 +63,46 @@ export default function AddStock(){
         if(ud != null){
           var stockUsername = ud.username;
         }
-        var js = 
-        '{"stock":"' + state.stockSymbol.toUpperCase() +
-        '","username":"' + stockUsername 
-        + '"}';
-
-        try
-        {    
-            const response = await fetch(BASE_URL + 'api/deleteStock',
-            {
-              method:'POST',
-              body:js,
-              headers:
-              {
-                'Content-Type': 'application/json'
-              }
-            }
-            );
-
-            var res = JSON.parse(await response.text());
-
-
-            if( res.error != '' )
-            {
-                setMessage(res.error);
-            }
-            else{
-              setMessage('Stock removed successfully!')
-              window.location.reload();
-            }
+        if( state.stockSymbol == '' ){
+          setMessage('Stock Field cannot be blank!');
+          return;
         }
-        catch(e)
-        {
-            alert(e.toString());
-            return;
+        else{
+          var js = 
+          '{"stock":"' + state.stockSymbol.toUpperCase() +
+          '","username":"' + stockUsername 
+          + '"}';
+
+          try
+          {    
+              const response = await fetch(BASE_URL + 'api/deleteStock',
+              {
+                method:'POST',
+                body:js,
+                headers:
+                {
+                  'Content-Type': 'application/json'
+                }
+              }
+              );
+
+              var res = JSON.parse(await response.text());
+
+
+              if( res.error != '' )
+              {
+                  setMessage(res.error);
+              }
+              else{
+                setMessage('Stock removed successfully!')
+                window.location.reload();
+              }
+          }
+          catch(e)
+          {
+              alert(e.toString());
+              return;
+          }
         } 
     };
 
@@ -108,40 +114,46 @@ export default function AddStock(){
         if(ud != null){
           var stockUsername = ud.username;
         }
-        var js = 
-        '{"stock":"' + state.stockSymbol.toUpperCase() +
-        '","username":"' + stockUsername 
-        + '"}';
-
-        try
-        {    
-            const response = await fetch(BASE_URL + 'api/addStock',
-            {
-              method:'POST',
-              body:js,
-              headers:
-              {
-                'Content-Type': 'application/json'
-              }
-            }
-            );
-
-            var res = JSON.parse(await response.text());
-
-
-            if( res.error != '' )
-            {
-                setMessage(res.error);
-            }
-            else{
-              setMessage('Stock added successfully!')
-              window.location.reload();
-            }
+        if( state.stockSymbol == '' ){
+          setMessage('Stock Field cannot be blank!');
+          return;
         }
-        catch(e)
-        {
-            alert(e.toString());
-            return;
+        else{
+          var js = 
+          '{"stock":"' + state.stockSymbol.toUpperCase() +
+          '","username":"' + stockUsername 
+          + '"}';
+
+          try
+          {    
+              const response = await fetch(BASE_URL + 'api/addStock',
+              {
+                method:'POST',
+                body:js,
+                headers:
+                {
+                  'Content-Type': 'application/json'
+                }
+              }
+              );
+
+              var res = JSON.parse(await response.text());
+
+
+              if( res.error != '' )
+              {
+                  setMessage(res.error);
+              }
+              else{
+                setMessage('Stock added successfully!')
+                window.location.reload();
+              }
+          }
+          catch(e)
+          {
+              alert(e.toString());
+              return;
+          }
         } 
     };
   

@@ -51,6 +51,7 @@ export default function SignOut(){
                 if( res.error !=  '' )
                 {
                     alert(res.error);
+                    window.location.href = '/';
                 }
                 else
                 {
@@ -59,7 +60,7 @@ export default function SignOut(){
                     localStorage.removeItem('session_token');
                     localStorage.setItem('session_token', JSON.stringify(session));
 
-                    alert('Logout Successful');
+                    //alert('Logout Successful');
                     window.location.href = '/';
                 }
             }
