@@ -100,7 +100,7 @@ async function fetchStock(stock)
   return iex.symbol(stock.toString()).price();
 }
 
-cron.schedule("00 00 16 * * 1-5", async function() {
+cron.schedule("00 40 12 * * 1-5", async function() {
     var userArray = []
     var stocks = []
     var d = new Date()
