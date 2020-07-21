@@ -8,7 +8,7 @@ const MongoClient = require('mongodb').MongoClient
 const uri = process.env.MONGO_URL
 const client = new MongoClient(uri)
 
-const masterUser = process.env.MASTERUSER 
+// const masterUser = process.env.MASTERUSER 
 
 const iex = new IEXCloudClient(fetch, {
     sandbox: true,
@@ -107,7 +107,7 @@ cron.schedule("00 00 16 * * 1-5", async function() {
     let dayOfWeek = currDay()
     let currDate = getDate(d)
     let db = client.db();
-    let results = await db.collection('User').find({username:masterUser}).toArray()
+    let results = await db.collection('User').find({username:process.env.MASTERUSER}).toArray()
 
     userArray = results[0].usersArray
     dateArray = results[0].datesArray
@@ -115,11 +115,11 @@ cron.schedule("00 00 16 * * 1-5", async function() {
 
     while (dLength > 4)
     {
-      await db.collection('User').updateOne( { username:masterUser }, { $pop: { datesArray: -1 } } )
+      await db.collection('User').updateOne( { username:process.env.MASTERUSER }, { $pop: { datesArray: -1 } } )
       dLength--
     }
 
-    await db.collection('User').updateOne( { username:masterUser }, { $push: { datesArray:currDate } } )
+    await db.collection('User').updateOne( { username:process.env.MASTERUSER }, { $push: { datesArray:currDate } } )
     
     // get current date & time, store it here
     
@@ -136,7 +136,6 @@ cron.schedule("00 00 16 * * 1-5", async function() {
         {
             let currPrice = await fetchStock(stocks[j]);
             totalPrice += currPrice
-            console.log(totalPrice)
         }
 
         while (vLength > 4)
@@ -145,7 +144,7 @@ cron.schedule("00 00 16 * * 1-5", async function() {
           vLength--
         }
 
-        await db.collection('User').updateOne({email:userArray[i]}, { $push: {"valueArray":totalPrice}});
+        await db.collection('User').updateOne({email:userArray[i]}, { $push: {"valueArray":totalPrice.toFixed(2)}});
 
     }
 
