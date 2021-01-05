@@ -8,8 +8,8 @@ stockInsertTest.js
 
 
 # unit tests
-date.test.js
-date.js
+date1.test.js
+date1.js
 addZero.js
 addZero.test.js
 mongoAdd.test.js
