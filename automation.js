@@ -100,52 +100,53 @@ async function fetchStock(stock)
   return iex.symbol(stock.toString()).price();
 }
 
-cron.schedule("00 40 12 * * 1-5", async function() {
-    var userArray = []
-    var stocks = []
-    var d = new Date()
-    let dayOfWeek = currDay()
-    let currDate = getDate(d)
-    let db = client.db();
-    let results = await db.collection('User').find({username:process.env.MASTERUSER}).toArray()
+cron.schedule("45 24 13 * * 1-5", async function() {
+  var userArray = []
+  var stocks = []
+  var d = new Date()
+  let dayOfWeek = currDay()
+  let currDate = getDate(d)
+  let db = client.db();
+  let results = await db.collection('User').find({username:process.env.MASTERUSER}).toArray()
 
-    userArray = results[0].usersArray
-    dateArray = results[0].datesArray
-    let dLength = dateArray.length
+  userArray = results[0].usersArray
+  dateArray = results[0].datesArray
+  let dLength = dateArray.length
 
-    while (dLength > 4)
+  while (dLength > 4)
+  {
+    await db.collection('User').updateOne( { username:process.env.MASTERUSER }, { $pop: { datesArray: -1 } } )
+    dLength--
+  }
+
+  await db.collection('User').updateOne( { username:process.env.MASTERUSER }, { $push: { datesArray:currDate } } )
+  
+  // get current date & time, store it here
+  
+  for (let i = 0; i < userArray.length; i++)
+  {
+    let totalPrice = 0;
+    let results2 = await db.collection('User').find( { email:userArray[i] } ).toArray()
+
+    stocks = results2[0].stockArray;
+    values = results2[0].valueArray;
+    let vLength = values.length
+
+    for (let j = 0; j < stocks.length; j++)
     {
-      await db.collection('User').updateOne( { username:process.env.MASTERUSER }, { $pop: { datesArray: -1 } } )
-      dLength--
+      let currPrice = await fetchStock(stocks[j]);
+      totalPrice += currPrice
+      console.log(totalPrice)
     }
 
-    await db.collection('User').updateOne( { username:process.env.MASTERUSER }, { $push: { datesArray:currDate } } )
-    
-    // get current date & time, store it here
-    
-    for (let i = 0; i < userArray.length; i++)
+    while (vLength > 4)
     {
-        let totalPrice = 0;
-        let results2 = await db.collection('User').find({email:userArray[i]}).toArray()
-
-        stocks = results2[0].stockArray;
-        values = results2[0].valueArray;
-        let vLength = values.length
-
-        for (let j = 0; j < stocks.length; j++)
-        {
-            let currPrice = await fetchStock(stocks[j]);
-            totalPrice += currPrice
-        }
-
-        while (vLength > 4)
-        {
-          await db.collection('User').updateOne( { email:userArray[i] }, { $pop: { valueArray: -1 } } )
-          vLength--
-        }
-
-        await db.collection('User').updateOne({email:userArray[i]}, { $push: {"valueArray":totalPrice.toFixed(2)}});
-
+      await db.collection('User').updateOne( { email:userArray[i] }, { $pop: { valueArray: -1 } } )
+      vLength--
     }
 
+    await db.collection('User').updateOne( { email:userArray[i] }, { $push: { "valueArray":totalPrice.toFixed(2) } } )
+
+  }
+  console.log("AUTOMATION IS DONE!")
 });
